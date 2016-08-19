@@ -62,20 +62,19 @@ protected:
 		// composite.h operations modify the first grid and leave the second grid emtpy
 		// compute a = a / b
 		openvdb::tools::compDiv(*small_grid, *big_grid);
-		
 
-		int number_of_nans = 0;
+		int number_of_nfs = 0;
 		
 		for (openvdb::FloatGrid::ValueOnIter iter = small_grid->beginValueOn(); iter; ++iter)
 		{
-		    if (std::isnan(iter.getValue()) == true)
+		    if (std::isfinite(iter.getValue()) == false)
 		{
-			number_of_nans += 1;		    
+			number_of_nfs += 1;		    
 		}
 		}
 
-		std::cout << "number of nans" << " = " << number_of_nans << std::endl;
-		CPPUNIT_ASSERT( number_of_nans == 0);
+		std::cout << "number of nfs" << " = " << number_of_nfs << std::endl;
+		CPPUNIT_ASSERT( number_of_nfs == 0);
 		
 	}
 	
@@ -84,9 +83,9 @@ protected:
 		// this test divides the big Block by the small one
 		// that means there should be division by zero
 		// another thing occured here i did not see before:
-		// instead of -nan from 0/0 division inf occurs from the division 
-		// so i have to check both cases http://stackoverflow.com/questions/4095337/how-to-check-for-inf-and-or-nan-in-a-double-variable
-		// with std::isfinite(x) --> if inf or -nan is finite results in false
+		// instead of -nf from 0/0 division inf occurs from the division 
+		// so i have to check both cases http://stackoverflow.com/questions/4095337/how-to-check-for-inf-and-or-nf-in-a-double-variable
+		// with std::isfinite(x) --> if inf or -nf is finite results in false
 
 		openvdb::FloatGrid::Ptr small_grid = openvdb::FloatGrid::create(/*background value=*/0);
 		openvdb::FloatGrid::Ptr big_grid = openvdb::FloatGrid::create(/*background value=*/0);
@@ -122,7 +121,7 @@ protected:
 	
 	void testOpenVDB_DivisionOfData3() {
 	
-		// only one point is set to > 0 in order to obtain every active voxel division nan except 
+		// only one point is set to > 0 in order to obtain every active voxel division nf except 
 		// grids (0,0,0) value is 0 divided by second_grids (0,0,0) value which is < 0
 
 		openvdb::FloatGrid::Ptr numerator_grid = openvdb::FloatGrid::create(/*background value=*/0);
@@ -142,24 +141,24 @@ protected:
 		// compute a = a / b
 		openvdb::tools::compDiv(*numerator_grid, *denominator_grid);
 
-		int number_of_nans = 0;
+		int number_of_nfs = 0;
 		
 		for (openvdb::FloatGrid::ValueOnIter iter = numerator_grid->beginValueOn(); iter; ++iter)
 		{
-		    if (std::isnan(iter.getValue()) == true)
+		    if (std::isfinite(iter.getValue()) == false)
 		{
-			number_of_nans += 1;	    
+			number_of_nfs += 1;	    
 		}
 		}
 
-		std::cout << "number of nans" << " = " << number_of_nans << std::endl; 
-		int assert_number_of_nans = numerator_grid->activeVoxelCount() - 1;
-		CPPUNIT_ASSERT( number_of_nans == assert_number_of_nans);
+		std::cout << "number of nfs" << " = " << number_of_nfs << std::endl; 
+		int assert_number_of_nfs = numerator_grid->activeVoxelCount() - 1;
+		CPPUNIT_ASSERT( number_of_nfs == assert_number_of_nfs);
 	}
 	
 	void testOpenVDB_DivisionOfData4() {
 	
-		// in this test the background is set to one which should produce not a single -nan
+		// in this test the background is set to one which should produce not a single -nf
 
 		openvdb::FloatGrid::Ptr numerator_grid;
 		openvdb::FloatGrid::Ptr denominator_grid;
@@ -178,18 +177,18 @@ protected:
 		// compute a = a / b
 		openvdb::tools::compDiv(*numerator_grid, *denominator_grid);
 		
-		int number_of_nans = 0;
+		int number_of_nfs = 0;
 		
 		for (openvdb::FloatGrid::ValueOnIter iter = numerator_grid->beginValueOn(); iter; ++iter)
 		{
-		    if (std::isnan(iter.getValue()) == true)
+		    if (std::isfinite(iter.getValue()) == false)
 		{
-			number_of_nans += 1;	    
+			number_of_nfs += 1;	    
 		}
 		}
 
-		std::cout << "number of nans" << " = " << number_of_nans << std::endl;
-		CPPUNIT_ASSERT( number_of_nans == 0);
+		std::cout << "number of nfs" << " = " << number_of_nfs << std::endl;
+		CPPUNIT_ASSERT( number_of_nfs == 0);
 	}
 	
 	
