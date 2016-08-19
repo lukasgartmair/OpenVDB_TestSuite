@@ -6,7 +6,6 @@
 
 
 
-
 openvdb::FloatGrid::Ptr loadData()
 {
 	openvdb::initialize();
@@ -29,6 +28,7 @@ openvdb::FloatGrid::Ptr loadData()
 
 openvdb::FloatGrid::Ptr createBlock(float radius, float value)
 {
+	
 	openvdb::FloatGrid::Ptr grid =
 	openvdb::FloatGrid::create(/*background value=*/0);
 	    // Get a voxel accessor.
@@ -48,54 +48,81 @@ openvdb::FloatGrid::Ptr createBlock(float radius, float value)
 	return grid;
 }
 
-/*
-int main()
+std::vector<openvdb::Vec3s> volumeToMeshVertices(openvdb::FloatGrid::Ptr grid, double isovalue, double adaptivity)
 {
+
 openvdb::initialize();
 
-openvdb::FloatGrid::Ptr grid;
-grid = loadData();
-
 // volume to mesh
-
-    double isovalue = 0;
-    double adaptivity = 0;
 
   std::vector<openvdb::Vec3s> points;
   std::vector<openvdb::Vec3I> triangles;
   std::vector<openvdb::Vec4I> quads;
-    // change the grid here to be extracted
+  
 openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
 
-std::cout << "points size" << " = " << points.size() << std::endl;
+//std::cout << "points size" << " = " << points.size() << std::endl;
 
-
- FILE* f = fopen("testing_bunny.obj","wt");
-
-  for(int i=0;i<points.size();i++) fprintf(f, "v %lf %lf %lf\n", points[i].x(), points[i].y(), points[i].z());
-  for(int i=0;i<triangles.size();i++) fprintf(f, "f %d %d %d\n", triangles[i][2]+1, triangles[i][1]+1, triangles[i][0]+1);
-  for(int i=0;i<quads.size();i++) fprintf(f, "f %d %d %d %d\n", quads[i][3]+1, quads[i][2]+1, quads[i][1]+1, quads[i][0]+1);
-
-  fclose(f);
-
-
-openvdb::io::File file("vdb_test_grid_pos.vdb");
-openvdb::GridPtrVec grids;
-grids.push_back(grid);
-
-file.write(grids);
-file.close();
-
-
-// create pts file
-
- FILE* fpts = fopen("testing_bunny.pts","wt");
-
-  for(int i=0;i<points.size();i++) fprintf(fpts, "v %.3f %.3f %.3f\n", points[i].x(), points[i].y(), points[i].z());
-
-  fclose(fpts);
-
+return points;
 
 }
 
+int roundUp(float numToRound, float multiple)
+{
+    if (multiple == 0)
+        return numToRound;
+    float remainder = fmod(abs(numToRound), multiple);
+    if (remainder == 0)
+        return numToRound;
+    if (numToRound < 0)
+        return -(abs(numToRound) - remainder);
+    else
+        return numToRound + multiple - remainder;
+}
+
+coord GetVoxelIndex(coord *vec, float voxsize)
+{
+    int cx = 0;
+    int cy = 0;
+    int cz = 0;
+
+    cx = roundUp(vec->x, voxsize);
+    cy = roundUp(vec->y, voxsize);
+    cz = roundUp(vec->z, voxsize);
+
+    coord voxel_index = {cx/voxsize, cy/voxsize , cz/voxsize};
+    return voxel_index;
+}
+
+
+
+
+/*
+void writeVDBData(grid, points, triangles, quads, isovalue, adaptivity)
+{
+
+	FILE* f = fopen("testing_bunny.obj","wt");
+
+	for(int i=0;i<points.size();i++) fprintf(f, "v %lf %lf %lf\n", points[i].x(), points[i].y(), points[i].z());
+	for(int i=0;i<triangles.size();i++) fprintf(f, "f %d %d %d\n", triangles[i][2]+1, triangles[i][1]+1, triangles[i][0]+1);
+	for(int i=0;i<quads.size();i++) fprintf(f, "f %d %d %d %d\n", quads[i][3]+1, quads[i][2]+1, quads[i][1]+1, quads[i][0]+1);
+
+	fclose(f);
+
+	openvdb::io::File file("vdb_test_grid_pos.vdb");
+	openvdb::GridPtrVec grids;
+	grids.push_back(grid);
+
+	file.write(grids);
+	file.close();
+
+	// create pts file
+
+	FILE* fpts = fopen("testing_bunny.pts","wt");
+
+	for(int i=0;i<points.size();i++) fprintf(fpts, "v %.3f %.3f %.3f\n", points[i].x(), points[i].y(), points[i].z());
+
+	fclose(fpts);
+
+}
 */

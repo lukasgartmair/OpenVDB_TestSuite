@@ -30,6 +30,12 @@ public:
 		
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test4 - Division of Data4 misc",
 				&TestOpenVDB::testOpenVDB_DivisionOfData4 ));
+				
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test5 - Volume to mesh DMC",
+				&TestOpenVDB::testOpenVDB_VolumeToMeshDMC ));
+				
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test6 - round up ",
+				&TestOpenVDB::testOpenVDB_RoundUp ));
 
 		return suiteOfTests;
 	}
@@ -49,6 +55,8 @@ protected:
 	}
 	
 	void testOpenVDB_DivisionOfData1() {
+	
+		openvdb::initialize();
 	
 		// this test divides the small Block by the big one
 		// that means there should be no division by zero because of background values.
@@ -86,7 +94,7 @@ protected:
 		// instead of -nf from 0/0 division inf occurs from the division 
 		// so i have to check both cases http://stackoverflow.com/questions/4095337/how-to-check-for-inf-and-or-nf-in-a-double-variable
 		// with std::isfinite(x) --> if inf or -nf is finite results in false
-
+		openvdb::initialize();
 		openvdb::FloatGrid::Ptr small_grid = openvdb::FloatGrid::create(/*background value=*/0);
 		openvdb::FloatGrid::Ptr big_grid = openvdb::FloatGrid::create(/*background value=*/0);
 		// radius, value
@@ -123,7 +131,7 @@ protected:
 	
 		// only one point is set to > 0 in order to obtain every active voxel division nf except 
 		// grids (0,0,0) value is 0 divided by second_grids (0,0,0) value which is < 0
-
+		openvdb::initialize();
 		openvdb::FloatGrid::Ptr numerator_grid = openvdb::FloatGrid::create(/*background value=*/0);
 		openvdb::FloatGrid::Ptr denominator_grid = openvdb::FloatGrid::create(/*background value=*/0);
 		
@@ -159,7 +167,7 @@ protected:
 	void testOpenVDB_DivisionOfData4() {
 	
 		// in this test the background is set to one which should produce not a single -nf
-
+		openvdb::initialize();
 		openvdb::FloatGrid::Ptr numerator_grid;
 		openvdb::FloatGrid::Ptr denominator_grid;
 		
@@ -191,6 +199,87 @@ protected:
 		CPPUNIT_ASSERT( number_of_nfs == 0);
 	}
 	
+	
+	void testOpenVDB_VolumeToMeshDMC()
+	{
+	
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(/*background value=*/0);
+		// radius, value
+		grid = createBlock(10,1);
+		
+		std::vector<openvdb::Vec3s> vertices;
+		// change the isovalue with no adaptivity
+		vertices = volumeToMeshVertices(grid, 0.5, 0);
+		CPPUNIT_ASSERT(vertices.size() == 2402);
+		
+		vertices = volumeToMeshVertices(grid, 0.01, 0);
+		CPPUNIT_ASSERT(vertices.size() == 2402);
+		
+		vertices = volumeToMeshVertices(grid, 0.99, 0);
+		CPPUNIT_ASSERT(vertices.size() == 2402);
+		
+		// change the adaptivity with constant isovalue
+		vertices = volumeToMeshVertices(grid, 0.5, 0.25);
+		CPPUNIT_ASSERT(vertices.size() == 566);
+		
+		vertices = volumeToMeshVertices(grid, 0.5, 0.5);
+		CPPUNIT_ASSERT(vertices.size() == 422);
+		
+		vertices = volumeToMeshVertices(grid, 0.5, 1);
+		CPPUNIT_ASSERT(vertices.size() == 56);
+
+	}
+	
+	void testOpenVDB_RoundUp()
+	{
+	// check the helper function round which is used to determine the voxel indices
+	// it has certainly to be discussed whether this behaviour is suitable to fill
+	// the ion grids !
+	
+		int rounded_result = 0;
+		rounded_result = roundUp(0.0, 5);
+		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		CPPUNIT_ASSERT(rounded_result == 0);
+		
+		
+		rounded_result = 0;
+		rounded_result = roundUp(0.5, 5);
+		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		CPPUNIT_ASSERT(rounded_result == 0);
+		
+		rounded_result = 0;
+		rounded_result = roundUp(0.99, 5);
+		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		CPPUNIT_ASSERT(rounded_result == 0);
+		
+		rounded_result = 0;
+		rounded_result = roundUp(1.0, 5);
+		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		CPPUNIT_ASSERT(rounded_result == 5);
+		
+		rounded_result = 0;
+		rounded_result = roundUp(4.9, 5);
+		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		CPPUNIT_ASSERT(rounded_result == 5);
+
+		rounded_result = 0;
+		rounded_result = roundUp(5.1, 5);
+		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		CPPUNIT_ASSERT(rounded_result == 5);
+		
+		rounded_result = 0;
+		rounded_result = roundUp(5.9, 5);
+		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		CPPUNIT_ASSERT(rounded_result == 5);
+
+		rounded_result = 0;
+		rounded_result = roundUp(6.0, 5);
+		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		CPPUNIT_ASSERT(rounded_result == 10);
+
+		
+	}
 	
 
 };
