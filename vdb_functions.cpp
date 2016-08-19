@@ -15,25 +15,25 @@ openvdb::FloatGrid::Ptr loadData()
 	// Open the file.  This reads the file header, but not any grids.
 	file.open();
 	// Loop over all grids in the file and retrieve a shared pointer
-	// to the one named "LevelSetSphere".  (This can also be done
-	// more simply by calling file.readGrid("LevelSetSphere").)
+	// to the one named "LevelSetBlock".  (This can also be done
+	// more simply by calling file.readGrid("LevelSetBlock").)
 	openvdb::GridBase::Ptr baseGrid;
 	baseGrid = file.readGrid("ls_bunny");
 	file.close();
-	// From the example above, "LevelSetSphere" is known to be a FloatGrid,
+	// From the example above, "LevelSetBlock" is known to be a FloatGrid,
 	// so cast the generic grid pointer to a FloatGrid pointer.
 	openvdb::FloatGrid::Ptr grid = openvdb::gridPtrCast<openvdb::FloatGrid>(baseGrid);
 
 	return grid;
 }
 
-openvdb::FloatGrid::Ptr createSphere(float radius, float value)
+openvdb::FloatGrid::Ptr createBlock(float radius, float value)
 {
 	openvdb::FloatGrid::Ptr grid =
 	openvdb::FloatGrid::create(/*background value=*/0);
 	    // Get a voxel accessor.
 	openvdb::FloatGrid::Accessor accessor = grid->getAccessor();
-	// Compute the signed distance from the surface of the sphere of each
+	// Compute the signed distance from the surface of the Block of each
 	// voxel within the bounding box and insert the value into the grid
 	// if it is smaller in magnitude than the background value.
 	openvdb::Coord ijk;

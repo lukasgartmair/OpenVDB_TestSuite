@@ -11,6 +11,6 @@
 
 
 openvdb::FloatGrid::Ptr loadData();
-openvdb::FloatGrid::Ptr createSphere(float radius, float value);
+openvdb::FloatGrid::Ptr createBlock(float radius, float value);
 
 #endif
