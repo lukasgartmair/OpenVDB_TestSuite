@@ -95,7 +95,24 @@ coord GetVoxelIndex(coord *vec, float voxsize)
 }
 
 
+std::vector<std::vector<float> > ConvertOpenVDBVectorToStandardVector(std::vector<openvdb::Vec3s> points)
+{
+  
+  int dimension = points.size();
+  std::vector<std::vector<float> > standard_points(dimension, std::vector<float>(dimension));
+  //http://stackoverflow.com/questions/21663256/how-to-initialize-a-vector-of-vectors
+  
+  
+  for (int i=0;i<dimension;i++)
+  {
+  	standard_points[i][0] = points[i].x();
+  	standard_points[i][1] = points[i].y();
+  	standard_points[i][2] = points[i].z();
+  }
+	
+  return standard_points;
 
+}
 
 /*
 void writeVDBData(grid, points, triangles, quads, isovalue, adaptivity)

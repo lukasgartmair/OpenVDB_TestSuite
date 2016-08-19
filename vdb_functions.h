@@ -26,4 +26,7 @@ std::vector<openvdb::Vec3s> volumeToMeshVertices(openvdb::FloatGrid::Ptr grid, d
 int roundUp(float numToRound, float multiple);
 coord GetVoxelIndex(coord *vec, float voxsize);
 
+// conversion functions for lpcvt
+std::vector<std::vector<float> > ConvertOpenVDBVectorToStandardVector(std::vector<openvdb::Vec3s> points);
+
 #endif

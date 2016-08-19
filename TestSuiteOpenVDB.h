@@ -37,8 +37,11 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test6 - round up ",
 				&TestOpenVDB::testOpenVDB_RoundUp ));
 				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test6 - get voxel index ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test7 - get voxel index ",
 				&TestOpenVDB::testOpenVDB_GetVoxelIndex ));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test8 - conversion openvdb vec3s to std::vec ",
+				&TestOpenVDB::testOpenVDB_VectorConversion ));
 
 		return suiteOfTests;
 	}
@@ -321,9 +324,32 @@ protected:
 		std::cout << "z" << " = " << result_coord.z << std::endl; 
 		CPPUNIT_ASSERT_EQUAL(assert_coord.x, result_coord.x);
 		CPPUNIT_ASSERT_EQUAL(assert_coord.y, result_coord.y);
-		CPPUNIT_ASSERT_EQUAL(assert_coord.z, result_coord.z);		
-			
+		CPPUNIT_ASSERT_EQUAL(assert_coord.z, result_coord.z);			
 	}	
+	
+	
+	void testOpenVDB_VectorConversion()
+	{
+		// set up some vertices
+		
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(/*background value=*/0);
+		grid = createBlock(10,1);	
+		std::vector<openvdb::Vec3s> vertices;
+		vertices = volumeToMeshVertices(grid, 0.5, 0);
+		
+		std::vector<std::vector<float> > standard_points;
+
+		standard_points = ConvertOpenVDBVectorToStandardVector(vertices);
+		
+		for (int i=0;i<vertices.size();i++)
+		{
+		CPPUNIT_ASSERT_EQUAL(vertices[i].x(), standard_points[i][0]);
+		CPPUNIT_ASSERT_EQUAL(vertices[i].y(), standard_points[i][1]);
+		CPPUNIT_ASSERT_EQUAL(vertices[i].z(), standard_points[i][2]);
+		}
+	
+	}
 	
 
 };
