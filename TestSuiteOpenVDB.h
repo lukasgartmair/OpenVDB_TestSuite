@@ -36,6 +36,9 @@ public:
 				
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test6 - round up ",
 				&TestOpenVDB::testOpenVDB_RoundUp ));
+				
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test6 - get voxel index ",
+				&TestOpenVDB::testOpenVDB_GetVoxelIndex ));
 
 		return suiteOfTests;
 	}
@@ -51,7 +54,7 @@ protected:
 		int x = 1;
 		int z = 2;
 		int u = x + z;
-		CPPUNIT_ASSERT( u == 3);
+		CPPUNIT_ASSERT_EQUAL(3, u);
 	}
 	
 	void testOpenVDB_DivisionOfData1() {
@@ -82,7 +85,7 @@ protected:
 		}
 
 		std::cout << "number of nfs" << " = " << number_of_nfs << std::endl;
-		CPPUNIT_ASSERT( number_of_nfs == 0);
+		CPPUNIT_ASSERT_EQUAL(0, number_of_nfs);
 		
 	}
 	
@@ -161,7 +164,7 @@ protected:
 
 		std::cout << "number of nfs" << " = " << number_of_nfs << std::endl; 
 		int assert_number_of_nfs = numerator_grid->activeVoxelCount() - 1;
-		CPPUNIT_ASSERT( number_of_nfs == assert_number_of_nfs);
+		CPPUNIT_ASSERT_EQUAL(assert_number_of_nfs,  number_of_nfs);
 	}
 	
 	void testOpenVDB_DivisionOfData4() {
@@ -196,7 +199,7 @@ protected:
 		}
 
 		std::cout << "number of nfs" << " = " << number_of_nfs << std::endl;
-		CPPUNIT_ASSERT( number_of_nfs == 0);
+		CPPUNIT_ASSERT_EQUAL( 0, number_of_nfs);
 	}
 	
 	
@@ -209,25 +212,28 @@ protected:
 		grid = createBlock(10,1);
 		
 		std::vector<openvdb::Vec3s> vertices;
+		int vx = 0;
 		// change the isovalue with no adaptivity
 		vertices = volumeToMeshVertices(grid, 0.5, 0);
-		CPPUNIT_ASSERT(vertices.size() == 2402);
-		
+		vx = vertices.size();
+		CPPUNIT_ASSERT_EQUAL( 2402, vx);
 		vertices = volumeToMeshVertices(grid, 0.01, 0);
-		CPPUNIT_ASSERT(vertices.size() == 2402);
-		
+		vx = vertices.size();
+		CPPUNIT_ASSERT_EQUAL(2402, vx);
+		vx = vertices.size();
 		vertices = volumeToMeshVertices(grid, 0.99, 0);
-		CPPUNIT_ASSERT(vertices.size() == 2402);
+		CPPUNIT_ASSERT_EQUAL(2402, vx);
 		
 		// change the adaptivity with constant isovalue
 		vertices = volumeToMeshVertices(grid, 0.5, 0.25);
-		CPPUNIT_ASSERT(vertices.size() == 566);
-		
+		vx = vertices.size();
+		CPPUNIT_ASSERT_EQUAL(566, vx);
 		vertices = volumeToMeshVertices(grid, 0.5, 0.5);
-		CPPUNIT_ASSERT(vertices.size() == 422);
-		
+		vx = vertices.size();
+		CPPUNIT_ASSERT_EQUAL(422, vx);
 		vertices = volumeToMeshVertices(grid, 0.5, 1);
-		CPPUNIT_ASSERT(vertices.size() == 56);
+		vx = vertices.size();
+		CPPUNIT_ASSERT_EQUAL(56, vx);
 
 	}
 	
@@ -240,46 +246,84 @@ protected:
 		int rounded_result = 0;
 		rounded_result = roundUp(0.0, 5);
 		std::cout << "rounded result" << " = " << rounded_result << std::endl;
-		CPPUNIT_ASSERT(rounded_result == 0);
-		
+		CPPUNIT_ASSERT_EQUAL(0, rounded_result);
 		
 		rounded_result = 0;
 		rounded_result = roundUp(0.5, 5);
 		std::cout << "rounded result" << " = " << rounded_result << std::endl;
-		CPPUNIT_ASSERT(rounded_result == 0);
+		CPPUNIT_ASSERT_EQUAL(0, rounded_result);
 		
 		rounded_result = 0;
 		rounded_result = roundUp(0.99, 5);
 		std::cout << "rounded result" << " = " << rounded_result << std::endl;
-		CPPUNIT_ASSERT(rounded_result == 0);
+		CPPUNIT_ASSERT_EQUAL(0, rounded_result);
 		
 		rounded_result = 0;
 		rounded_result = roundUp(1.0, 5);
 		std::cout << "rounded result" << " = " << rounded_result << std::endl;
-		CPPUNIT_ASSERT(rounded_result == 5);
+		CPPUNIT_ASSERT_EQUAL(5, rounded_result);
 		
 		rounded_result = 0;
 		rounded_result = roundUp(4.9, 5);
 		std::cout << "rounded result" << " = " << rounded_result << std::endl;
-		CPPUNIT_ASSERT(rounded_result == 5);
+		CPPUNIT_ASSERT_EQUAL(5, rounded_result);
 
 		rounded_result = 0;
 		rounded_result = roundUp(5.1, 5);
 		std::cout << "rounded result" << " = " << rounded_result << std::endl;
-		CPPUNIT_ASSERT(rounded_result == 5);
+		CPPUNIT_ASSERT_EQUAL(5, rounded_result);
 		
 		rounded_result = 0;
 		rounded_result = roundUp(5.9, 5);
 		std::cout << "rounded result" << " = " << rounded_result << std::endl;
-		CPPUNIT_ASSERT(rounded_result == 5);
+		CPPUNIT_ASSERT_EQUAL(5, rounded_result);
 
 		rounded_result = 0;
 		rounded_result = roundUp(6.0, 5);
 		std::cout << "rounded result" << " = " << rounded_result << std::endl;
-		CPPUNIT_ASSERT(rounded_result == 10);
+		CPPUNIT_ASSERT_EQUAL(10, rounded_result);
 
-		
 	}
+	
+	
+	void testOpenVDB_GetVoxelIndex()
+	{
+		// this function is of course highly dependent on its helper function RoundUp
+	
+		coord test_coord = {0,0,0};
+		coord result_coord = {0,0,0};
+		float voxelsize = 3;
+		result_coord = GetVoxelIndex(&test_coord, voxelsize);
+		coord assert_coord = {0,0,0};
+		CPPUNIT_ASSERT_EQUAL(result_coord.x, assert_coord.x);
+		CPPUNIT_ASSERT_EQUAL(result_coord.y, assert_coord.y);
+		CPPUNIT_ASSERT_EQUAL(result_coord.z, assert_coord.z);	
+		
+		test_coord = {12.5,-22,-3};
+		result_coord = {0,0,0};
+		voxelsize = 3;
+		result_coord = GetVoxelIndex(&test_coord, voxelsize);
+		assert_coord = {4,-7,-1};
+		std::cout << "x" << " = " << result_coord.x << std::endl; 
+		std::cout << "y" << " = " << result_coord.y << std::endl; 
+		std::cout << "z" << " = " << result_coord.z << std::endl; 
+		CPPUNIT_ASSERT_EQUAL(assert_coord.x, result_coord.x);
+		CPPUNIT_ASSERT_EQUAL(assert_coord.y, result_coord.y);
+		CPPUNIT_ASSERT_EQUAL(assert_coord.z, result_coord.z);	
+		
+		test_coord = {12.5,0.1,-3};
+		result_coord = {0,0,0};
+		voxelsize = 3;
+		result_coord = GetVoxelIndex(&test_coord, voxelsize);
+		assert_coord = {4,0,-1};
+		std::cout << "x" << " = " << result_coord.x << std::endl; 
+		std::cout << "y" << " = " << result_coord.y << std::endl; 
+		std::cout << "z" << " = " << result_coord.z << std::endl; 
+		CPPUNIT_ASSERT_EQUAL(assert_coord.x, result_coord.x);
+		CPPUNIT_ASSERT_EQUAL(assert_coord.y, result_coord.y);
+		CPPUNIT_ASSERT_EQUAL(assert_coord.z, result_coord.z);		
+			
+	}	
 	
 
 };
