@@ -10,6 +10,9 @@
 // sudo g++ -I/usr/include/openvdb vdb_test1.cpp TestRunner.cpp -lcppunit -lopenvdb -ltbb -lHalf -o RunTests
 //sudo g++ -I/usr/include/openvdb vdb_functions.cpp TestRunner.cpp -lcppunit -lopenvdb -ltbb -lHalf -o RunTests
 
+// sudo g++ -std=c++11 -I/usr/include/openvdb vdb_functions.cpp TestRunner.cpp -lcppunit -lopenvdb -ltbb -lHalf -o RunTests
+
+
 using namespace std;
  
 int main() {

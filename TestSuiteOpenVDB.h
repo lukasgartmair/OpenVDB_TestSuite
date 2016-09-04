@@ -42,6 +42,12 @@ public:
 
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test8 - conversion openvdb vec3s to std::vec ",
 				&TestOpenVDB::testOpenVDB_VectorConversion ));
+				
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test9 - split openvdb quads to triangles ",
+				&TestOpenVDB::testOpenVDB_SplitQuadsToTriangles ));
+				
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test10 - concatenate triangle lists ",
+				&TestOpenVDB::testOpenVDB_ConcatenateTriangles ));
 
 		return suiteOfTests;
 	}
@@ -87,7 +93,7 @@ protected:
 		}
 		}
 
-		std::cout << "number of nfs" << " = " << number_of_nfs << std::endl;
+		//std::cout << "number of nfs" << " = " << number_of_nfs << std::endl;
 		CPPUNIT_ASSERT_EQUAL(0, number_of_nfs);
 		
 	}
@@ -123,12 +129,12 @@ protected:
 		}
 		}
 		
-		std::cout << "number of nfs" << " = " << number_of_nfs << std::endl;
+		//std::cout << "number of nfs" << " = " << number_of_nfs << std::endl;
 		float minVal = 0.0;
 		float maxVal = 0.0;
 		big_grid->evalMinMax(minVal,maxVal);
-		std::cout << " eval min max big grid" << " = " << minVal << " , " << maxVal << std::endl;
-		std::cout << " active voxel count big grid" << " = " << big_grid->activeVoxelCount() << std::endl;
+		//std::cout << " eval min max big grid" << " = " << minVal << " , " << maxVal << std::endl;
+		//std::cout << " active voxel count big grid" << " = " << big_grid->activeVoxelCount() << std::endl;
 		CPPUNIT_ASSERT( number_of_nfs > 0);
 
 	}
@@ -165,7 +171,7 @@ protected:
 		}
 		}
 
-		std::cout << "number of nfs" << " = " << number_of_nfs << std::endl; 
+		//std::cout << "number of nfs" << " = " << number_of_nfs << std::endl; 
 		int assert_number_of_nfs = numerator_grid->activeVoxelCount() - 1;
 		CPPUNIT_ASSERT_EQUAL(assert_number_of_nfs,  number_of_nfs);
 	}
@@ -201,7 +207,7 @@ protected:
 		}
 		}
 
-		std::cout << "number of nfs" << " = " << number_of_nfs << std::endl;
+		//std::cout << "number of nfs" << " = " << number_of_nfs << std::endl;
 		CPPUNIT_ASSERT_EQUAL( 0, number_of_nfs);
 	}
 	
@@ -248,42 +254,42 @@ protected:
 	
 		int rounded_result = 0;
 		rounded_result = roundUp(0.0, 5);
-		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		//std::cout << "rounded result" << " = " << rounded_result << std::endl;
 		CPPUNIT_ASSERT_EQUAL(0, rounded_result);
 		
 		rounded_result = 0;
 		rounded_result = roundUp(0.5, 5);
-		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		//std::cout << "rounded result" << " = " << rounded_result << std::endl;
 		CPPUNIT_ASSERT_EQUAL(0, rounded_result);
 		
 		rounded_result = 0;
 		rounded_result = roundUp(0.99, 5);
-		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		//std::cout << "rounded result" << " = " << rounded_result << std::endl;
 		CPPUNIT_ASSERT_EQUAL(0, rounded_result);
 		
 		rounded_result = 0;
 		rounded_result = roundUp(1.0, 5);
-		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		//std::cout << "rounded result" << " = " << rounded_result << std::endl;
 		CPPUNIT_ASSERT_EQUAL(5, rounded_result);
 		
 		rounded_result = 0;
 		rounded_result = roundUp(4.9, 5);
-		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		//std::cout << "rounded result" << " = " << rounded_result << std::endl;
 		CPPUNIT_ASSERT_EQUAL(5, rounded_result);
 
 		rounded_result = 0;
 		rounded_result = roundUp(5.1, 5);
-		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		//std::cout << "rounded result" << " = " << rounded_result << std::endl;
 		CPPUNIT_ASSERT_EQUAL(5, rounded_result);
 		
 		rounded_result = 0;
 		rounded_result = roundUp(5.9, 5);
-		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		//std::cout << "rounded result" << " = " << rounded_result << std::endl;
 		CPPUNIT_ASSERT_EQUAL(5, rounded_result);
 
 		rounded_result = 0;
 		rounded_result = roundUp(6.0, 5);
-		std::cout << "rounded result" << " = " << rounded_result << std::endl;
+		//std::cout << "rounded result" << " = " << rounded_result << std::endl;
 		CPPUNIT_ASSERT_EQUAL(10, rounded_result);
 
 	}
@@ -307,9 +313,9 @@ protected:
 		voxelsize = 3;
 		result_coord = GetVoxelIndex(&test_coord, voxelsize);
 		assert_coord = {4,-7,-1};
-		std::cout << "x" << " = " << result_coord.x << std::endl; 
-		std::cout << "y" << " = " << result_coord.y << std::endl; 
-		std::cout << "z" << " = " << result_coord.z << std::endl; 
+		//std::cout << "x" << " = " << result_coord.x << std::endl; 
+		//std::cout << "y" << " = " << result_coord.y << std::endl; 
+		//std::cout << "z" << " = " << result_coord.z << std::endl; 
 		CPPUNIT_ASSERT_EQUAL(assert_coord.x, result_coord.x);
 		CPPUNIT_ASSERT_EQUAL(assert_coord.y, result_coord.y);
 		CPPUNIT_ASSERT_EQUAL(assert_coord.z, result_coord.z);	
@@ -319,9 +325,9 @@ protected:
 		voxelsize = 3;
 		result_coord = GetVoxelIndex(&test_coord, voxelsize);
 		assert_coord = {4,0,-1};
-		std::cout << "x" << " = " << result_coord.x << std::endl; 
-		std::cout << "y" << " = " << result_coord.y << std::endl; 
-		std::cout << "z" << " = " << result_coord.z << std::endl; 
+		//std::cout << "x" << " = " << result_coord.x << std::endl; 
+		//std::cout << "y" << " = " << result_coord.y << std::endl; 
+		//std::cout << "z" << " = " << result_coord.z << std::endl; 
 		CPPUNIT_ASSERT_EQUAL(assert_coord.x, result_coord.x);
 		CPPUNIT_ASSERT_EQUAL(assert_coord.y, result_coord.y);
 		CPPUNIT_ASSERT_EQUAL(assert_coord.z, result_coord.z);			
@@ -340,7 +346,7 @@ protected:
 		
 		std::vector<std::vector<float> > standard_points;
 
-		standard_points = ConvertOpenVDBVectorToStandardVector(vertices);
+		standard_points = convertOpenVDBVectorToStandardVector(vertices);
 		
 		for (int i=0;i<vertices.size();i++)
 		{
@@ -350,6 +356,82 @@ protected:
 		}
 	
 	}
+	
+	void testOpenVDB_SplitQuadsToTriangles()
+	{	
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(/*background value=*/0);
+		grid = createBlock(2,1);	
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec3I> triangles;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.5;
+		float adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
+
+		std::vector<std::vector<float> > triangles_from_splitted_quads;
+
+		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
+		
+		//std::cout << triangles_from_splitted_quads.size() << std::endl; 
+		
+		CPPUNIT_ASSERT_EQUAL(quads.size()*2,triangles_from_splitted_quads.size());
+	
+	}
+	
+	void testOpenVDB_ConcatenateTriangles()
+	{
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(/*background value=*/0);
+		grid = createBlock(2,1);	
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec3I> triangles;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.5;
+		float adaptivity=0.5;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
+
+		std::vector<std::vector<float> > triangles_from_splitted_quads;
+		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
+		
+		std::vector<std::vector<float> > triangles_combined;
+		triangles_combined = concatenateTriangleVectors(triangles, triangles_from_splitted_quads);
+
+		int tri_size = triangles_combined.size();
+		int assert_size = (quads.size()*2) + triangles.size();
+		CPPUNIT_ASSERT_EQUAL(assert_size, tri_size);
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	
 
 };
