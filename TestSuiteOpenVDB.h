@@ -7,6 +7,8 @@
 #include <cppunit/TestCase.h>
 
 #include "vdb_functions.h"
+
+#include <algorithm>    // std::min
  
 class TestOpenVDB : public CppUnit::TestFixture {
 
@@ -359,8 +361,10 @@ protected:
 	
 	void testOpenVDB_SplitQuadsToTriangles()
 	{	
+
+		// test if the sum is correct
 		openvdb::initialize();
-		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(/*background value=*/0);
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
 		grid = createBlock(2,1);	
 		std::vector<openvdb::Vec3s> points;
 		std::vector<openvdb::Vec3I> triangles;
@@ -372,18 +376,86 @@ protected:
 
 		std::vector<std::vector<float> > triangles_from_splitted_quads;
 
-		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
+		//triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
 		
 		//std::cout << triangles_from_splitted_quads.size() << std::endl; 
 		
-		CPPUNIT_ASSERT_EQUAL(quads.size()*2,triangles_from_splitted_quads.size());
+		//CPPUNIT_ASSERT_EQUAL(quads.size()*2,triangles_from_splitted_quads.size());
+		
+		// faces outputs from openvdb volume to mesh starting from zero!
+		int minimum  = 20;
+		int minimum_tris = 20;
+		for (int i=0;i<triangles.size();i++)
+		{
+			for (int j=0;j<3;j++)
+			{
+				if (triangles[i][j] < minimum)
+				{
+					minimum = triangles[i][j];
+				}
+			}
+		}
+		
+		int minimum_quads = 20;
+		for (int i=0;i<quads.size();i++)
+		{
+			for (int j=0;j<3;j++)
+			{
+				if (quads[i][j] < minimum_quads)
+				{
+					minimum_quads = quads[i][j];
+				}
+			}
+		}
+		
+		if (minimum_tris < minimum_quads)
+		{
+			minimum = minimum_tris;
+		}
+		else
+		{
+			minimum = minimum_quads;
+		}
+
+		const int assert_faces_minimum = 0;
+		CPPUNIT_ASSERT_EQUAL(assert_faces_minimum, minimum);
+
+	
+		// simple plane 
+		
+		grid = createBlock(1,1);	
+		isovalue=0.1;
+		adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, quads, isovalue);
+		points.resize(4);
+		points[0][0] = -1.0;
+		points[0][1] = 0;
+		points[0][2] = 1.0;
+		points[1][0] = 1.0;
+		points[1][1] = 0;
+		points[1][2] = 1.0;
+		points[2][0] = -1.0;
+		points[2][1] = 0;
+		points[2][2] = -1.0;
+		points[3][0] = 1.0;
+		points[3][1] = 0;
+		points[3][2] = -1.0;
+		quads.resize(1);
+		quads[0][0] = 0;
+		quads[0][1] = 1;
+		quads[0][2] = 2;
+		quads[0][3] = 3;
+		
+		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
+		int tri_size = triangles_from_splitted_quads.size();
+		CPPUNIT_ASSERT_EQUAL(2,tri_size);
 	
 	}
 	
 	void testOpenVDB_ConcatenateTriangles()
 	{
 		openvdb::initialize();
-		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(/*background value=*/0);
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
 		grid = createBlock(2,1);	
 		std::vector<openvdb::Vec3s> points;
 		std::vector<openvdb::Vec3I> triangles;
@@ -398,6 +470,11 @@ protected:
 		
 		std::vector<std::vector<float> > triangles_combined;
 		triangles_combined = concatenateTriangleVectors(triangles, triangles_from_splitted_quads);
+		
+		
+		//std::cout << triangles_combined[triangles.size()][0] << std::endl; 
+		//std::cout << triangles_combined[triangles.size()][1] << std::endl; 
+		//std::cout << triangles_combined[triangles.size()][2] << std::endl; 
 
 		int tri_size = triangles_combined.size();
 		int assert_size = (quads.size()*2) + triangles.size();

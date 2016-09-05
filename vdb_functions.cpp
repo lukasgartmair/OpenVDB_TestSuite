@@ -97,7 +97,7 @@ std::vector<std::vector<float> > splitQuadsToTriangles(std::vector<openvdb::Vec3
 	int number_of_splitted_triangles = 2*quads.size();
 	int xyzs = 3;
 	std::vector<std::vector<float> > triangles_from_splitted_quads(number_of_splitted_triangles, std::vector<float>(xyzs));
-	
+
 	for(unsigned int ui=0;ui<quads.size();ui+=2)
 	{
 		openvdb::Vec3s A = points[quads[ui][0]];
