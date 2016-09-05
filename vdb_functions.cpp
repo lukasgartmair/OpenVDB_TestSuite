@@ -74,11 +74,10 @@ coord GetVoxelIndex(coord *vec, float voxsize)
 
 std::vector<std::vector<float> > convertOpenVDBVectorToStandardVector(std::vector<openvdb::Vec3s> points)
 {
-  
+  	int xyzs = 3;
 	int dimension = points.size();
-	std::vector<std::vector<float> > standard_points(dimension, std::vector<float>(dimension));
+	std::vector<std::vector<float> > standard_points(dimension, std::vector<float>(xyzs));
 	//http://stackoverflow.com/questions/21663256/how-to-initialize-a-vector-of-vectors
-
 
 	for (int i=0;i<dimension;i++)
 	{
