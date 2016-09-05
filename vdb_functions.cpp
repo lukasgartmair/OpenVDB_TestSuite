@@ -98,7 +98,7 @@ std::vector<std::vector<float> > splitQuadsToTriangles(std::vector<openvdb::Vec3
 	int xyzs = 3;
 	std::vector<std::vector<float> > triangles_from_splitted_quads(number_of_splitted_triangles, std::vector<float>(xyzs));
 
-	for(unsigned int ui=0;ui<quads.size();ui+=2)
+	for(int ui=0;ui<quads.size();ui++)
 	{
 		openvdb::Vec3s A = points[quads[ui][0]];
 		openvdb::Vec3s B = points[quads[ui][1]];
@@ -113,24 +113,24 @@ std::vector<std::vector<float> > splitQuadsToTriangles(std::vector<openvdb::Vec3
 		if (distanceAC <= distanceBD)
 		{	
 			//tri 1 ABC
-			triangles_from_splitted_quads[ui][0] = quads[ui][0];
-			triangles_from_splitted_quads[ui][1] = quads[ui][1];
-			triangles_from_splitted_quads[ui][2] = quads[ui][2];
+			triangles_from_splitted_quads[ui*2][0] = quads[ui][0];
+			triangles_from_splitted_quads[ui*2][1] = quads[ui][1];
+			triangles_from_splitted_quads[ui*2][2] = quads[ui][2];
 			//tri2 ACD
-			triangles_from_splitted_quads[ui+1][0] = quads[ui][0];
-			triangles_from_splitted_quads[ui+1][1] = quads[ui][2];
-			triangles_from_splitted_quads[ui+1][2] = quads[ui][3];	
+			triangles_from_splitted_quads[(ui*2)+1][0] = quads[ui][0];
+			triangles_from_splitted_quads[(ui*2)+1][1] = quads[ui][2];
+			triangles_from_splitted_quads[(ui*2)+1][2] = quads[ui][3];	
 		}
 		if (distanceAC > distanceBD)
 		{
 			//tri 1 ABC
-			triangles_from_splitted_quads[ui][0] = quads[ui][0];
-			triangles_from_splitted_quads[ui][1] = quads[ui][1];
-			triangles_from_splitted_quads[ui][2] = quads[ui][3];
+			triangles_from_splitted_quads[ui*2][0] = quads[ui][0];
+			triangles_from_splitted_quads[ui*2][1] = quads[ui][1];
+			triangles_from_splitted_quads[ui*2][2] = quads[ui][3];
 			//tri2 ACD
-			triangles_from_splitted_quads[ui+1][0] = quads[ui][3];
-			triangles_from_splitted_quads[ui+1][1] = quads[ui][1];
-			triangles_from_splitted_quads[ui+1][2] = quads[ui][2];
+			triangles_from_splitted_quads[(ui*2)+1][0] = quads[ui][3];
+			triangles_from_splitted_quads[(ui*2)+1][1] = quads[ui][1];
+			triangles_from_splitted_quads[(ui*2)+1][2] = quads[ui][2];
 		}
 	}
 	
