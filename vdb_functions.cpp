@@ -145,24 +145,20 @@ std::vector<std::vector<float> > concatenateTriangleVectors(std::vector<openvdb:
 	int number_of_total_triangles = triangles.size() + triangles_from_splitted_quads.size();
 	std::vector<std::vector<float> > triangles_combined(number_of_total_triangles, std::vector<float>(xyzs));
 	
-	int counter_start_from_zero = 0;
-	for(unsigned int ui=0;ui<number_of_total_triangles;ui++)
-	{	
-		if (ui < triangles.size())
+	for (int i=0;i<triangles.size();i++)
+	{
+		for(int uj=0;uj<xyzs;uj++)
 		{
-			for(unsigned int uj=0;uj<xyzs;uj++)
-			{
-				triangles_combined[ui][uj] = triangles[ui][uj];
-			}
+			triangles_combined[i][uj] = triangles[i][uj];
 		}
-		if (ui >= triangles.size())
+	}
+	
+	for (int i=triangles.size();i<number_of_total_triangles;i++)
+	{
+		int shifted_index = i - triangles.size();
+		for(unsigned int uj=0;uj<xyzs;uj++)
 		{
-			
-			for(unsigned int uj=0;uj<xyzs;uj++)
-			{
-				triangles_combined[ui][uj] = triangles_from_splitted_quads[counter_start_from_zero][uj];
-			}
-			counter_start_from_zero += 1;
+			triangles_combined[i][uj] = triangles_from_splitted_quads[shifted_index][uj];
 		}
 	}
 	

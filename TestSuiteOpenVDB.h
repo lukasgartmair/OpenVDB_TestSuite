@@ -245,7 +245,48 @@ protected:
 		vertices = volumeToMeshVertices(grid, 0.5, 1);
 		vx = vertices.size();
 		CPPUNIT_ASSERT_EQUAL(56, vx);
-
+		
+		
+		
+		// got -nans as coordinates even if there were no -nans in the grid
+		// this test should check how this is possible
+		// i.e. not only to check the amount but the content!
+		int non_finites_counter = 0;
+		int xyzs = 3;
+		for (int i=0;i<vertices.size();i++)
+		{
+			for (int j=0;j<xyzs;j++)
+			{
+			    if (std::isfinite(vertices[i][j]) == false)
+				{	
+					non_finites_counter += 1;    
+				}
+			}
+		}
+		int assert_non_finites = 0;
+		CPPUNIT_ASSERT_EQUAL(assert_non_finites, non_finites_counter);
+	
+		// got -nans as coordinates even if there were no -nans in the grid
+		// this test should check how this is possible
+		// i.e. not only to check the amount but the content!
+		non_finites_counter = 0;
+		
+		vertices[0][0] = 0.0 / 0.0; // which results in -nan
+ 		
+		for (int i=0;i<vertices.size();i++)
+		{
+			for (int j=0;j<xyzs;j++)
+			{
+			    if (std::isfinite(vertices[i][j]) == false)
+				{	
+					non_finites_counter += 1;    
+				}
+			}
+		}
+		
+		assert_non_finites = 1;
+		CPPUNIT_ASSERT_EQUAL(assert_non_finites, non_finites_counter);	
+	
 	}
 	
 	void testOpenVDB_RoundUp()
@@ -352,9 +393,9 @@ protected:
 		
 		for (int i=0;i<vertices.size();i++)
 		{
-		CPPUNIT_ASSERT_EQUAL(vertices[i].x(), standard_points[i][0]);
-		CPPUNIT_ASSERT_EQUAL(vertices[i].y(), standard_points[i][1]);
-		CPPUNIT_ASSERT_EQUAL(vertices[i].z(), standard_points[i][2]);
+			CPPUNIT_ASSERT_EQUAL(vertices[i].x(), standard_points[i][0]);
+			CPPUNIT_ASSERT_EQUAL(vertices[i].y(), standard_points[i][1]);
+			CPPUNIT_ASSERT_EQUAL(vertices[i].z(), standard_points[i][2]);
 		}
 	
 	}
@@ -454,6 +495,7 @@ protected:
 	
 	void testOpenVDB_ConcatenateTriangles()
 	{
+		// check the amount
 		openvdb::initialize();
 		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
 		grid = createBlock(2,1);	
@@ -469,8 +511,8 @@ protected:
 		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
 		
 		std::vector<std::vector<float> > triangles_combined;
-		triangles_combined = concatenateTriangleVectors(triangles, triangles_from_splitted_quads);
 		
+		triangles_combined = concatenateTriangleVectors(triangles, triangles_from_splitted_quads);
 		
 		//std::cout << triangles_combined[triangles.size()][0] << std::endl; 
 		//std::cout << triangles_combined[triangles.size()][1] << std::endl; 
@@ -479,6 +521,25 @@ protected:
 		int tri_size = triangles_combined.size();
 		int assert_size = (quads.size()*2) + triangles.size();
 		CPPUNIT_ASSERT_EQUAL(assert_size, tri_size);
+
+		//check the contents
+		
+		for (int i=0;i<triangles.size();i++)
+		{
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(triangles[i][0], triangles_combined[i][0],0.01);
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(triangles[i][1], triangles_combined[i][1],0.01);
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(triangles[i][2], triangles_combined[i][2],0.01);
+		}
+		
+		for (int i=triangles.size();i<2*quads.size()+triangles.size();i++)
+		{
+			int shifted_index = i - triangles.size();
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(triangles_from_splitted_quads[shifted_index][0], triangles_combined[i][0],0.01);
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(triangles_from_splitted_quads[shifted_index][1], triangles_combined[i][1],0.01);
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(triangles_from_splitted_quads[shifted_index][2], triangles_combined[i][2],0.01);
+		}
+
+		
 	}
 
 
