@@ -490,6 +490,25 @@ protected:
 		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
 		int tri_size = triangles_from_splitted_quads.size();
 		CPPUNIT_ASSERT_EQUAL(2,tri_size);
+		
+		//check the contents
+		
+		int xyzs = 3;
+		std::vector<std::vector<float> > assert_triangles(tri_size, std::vector<float>(xyzs));
+		
+		assert_triangles[0][0] = 0; 
+		assert_triangles[0][1] = 1; 
+		assert_triangles[0][2] = 2; 
+		assert_triangles[1][0] = 0; 
+		assert_triangles[1][1] = 2; 
+		assert_triangles[1][2] = 3; 	
+		
+		for (int i=0;i<tri_size;i++)
+		{
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][0], triangles_from_splitted_quads[i][0],0.01);
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][1], triangles_from_splitted_quads[i][1],0.01);
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][2], triangles_from_splitted_quads[i][2],0.01);
+		}
 	
 	}
 	
