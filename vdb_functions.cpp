@@ -177,4 +177,17 @@ std::vector<std::vector<float> > IncreaseTriangleVertexIndicesByN(std::vector<st
 	return triangles_indices_increased;
 }
 
+std::vector<std::vector<float> > DecreaseTriangleVertexIndicesByN(std::vector<std::vector<float> > triangles, int N)
+{
+	int xyzs = 3;
+	std::vector<std::vector<float> > triangles_indices_decreased(triangles.size(), std::vector<float>(xyzs));
+	for (int i=0;i<triangles.size();i++)
+	{
+		triangles_indices_decreased[i][0] = triangles[i][0] - N;
+		triangles_indices_decreased[i][1] = triangles[i][1] - N;
+		triangles_indices_decreased[i][2] = triangles[i][2] - N;
+	}
+	return triangles_indices_decreased;
+}
+
 

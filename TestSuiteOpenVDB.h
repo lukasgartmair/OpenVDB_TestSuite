@@ -54,6 +54,10 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test11 - increase triangle vertex indices by n ",
 				&TestOpenVDB::testOpenVDB_IncreaseTrianglesVertexIndices ));
 
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test12 - decrease triangle vertex indices by n ",
+				&TestOpenVDB::testOpenVDB_DecreaseTrianglesVertexIndices ));
+
+
 		return suiteOfTests;
 	}
  
@@ -588,6 +592,41 @@ protected:
 		std::vector<std::vector<float> > result_triangles(tri_size, std::vector<float>(xyzs));
 		int N = 1;
 		result_triangles = IncreaseTriangleVertexIndicesByN(triangles, N);
+		
+		//check the contents
+		for (int i=0;i<tri_size;i++)
+		{
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][0], result_triangles[i][0],0.01);
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][1], result_triangles[i][1],0.01);
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][2], result_triangles[i][2],0.01);
+		}
+	}
+	
+	void testOpenVDB_DecreaseTrianglesVertexIndices()
+	{
+		int tri_size = 2;
+		int xyzs = 3;
+		std::vector<std::vector<float> > triangles(tri_size, std::vector<float>(xyzs));
+	
+		triangles[0][0] = 1; 
+		triangles[0][1] = 2; 
+		triangles[0][2] = 3; 
+		triangles[1][0] = 1; 
+		triangles[1][1] = 3; 
+		triangles[1][2] = 4; 	
+
+		std::vector<std::vector<float> > assert_triangles(tri_size, std::vector<float>(xyzs));
+		
+		assert_triangles[0][0] = 0; 
+		assert_triangles[0][1] = 1; 
+		assert_triangles[0][2] = 2; 
+		assert_triangles[1][0] = 0; 
+		assert_triangles[1][1] = 2; 
+		assert_triangles[1][2] = 3; 
+		
+		std::vector<std::vector<float> > result_triangles(tri_size, std::vector<float>(xyzs));
+		int N = 1;
+		result_triangles = DecreaseTriangleVertexIndicesByN(triangles, N);
 		
 		//check the contents
 		for (int i=0;i<tri_size;i++)
