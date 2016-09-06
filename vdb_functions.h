@@ -32,4 +32,11 @@ std::vector<std::vector<float> > convertOpenVDBVectorToStandardVector(std::vecto
 std::vector<std::vector<float> > IncreaseTriangleVertexIndicesByN(std::vector<std::vector<float> > triangles, int N);
 std::vector<std::vector<float> > DecreaseTriangleVertexIndicesByN(std::vector<std::vector<float> > triangles, int N);
 
+// vector stuff for normal calculation
+
+float GetLengthOfVector(std::vector<float> vec);
+std::vector<float> NormalizeVector(std::vector<float> vec);
+std::vector<float> GetCrossProduct(std::vector<float> vec1, std::vector<float> vec2);
+std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles);
+
 #endif

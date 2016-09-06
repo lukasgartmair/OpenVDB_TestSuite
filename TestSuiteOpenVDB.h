@@ -56,6 +56,12 @@ public:
 
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test12 - decrease triangle vertex indices by n ",
 				&TestOpenVDB::testOpenVDB_DecreaseTrianglesVertexIndices ));
+				
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test13 - compute vertex normals ",
+				&TestOpenVDB::testOpenVDB_ComputeVertexNormals ));
+				
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test14 - compute triangle normals ",
+				&TestOpenVDB::testOpenVDB_ComputeTriangleNormals ));
 
 
 		return suiteOfTests;
@@ -478,16 +484,16 @@ protected:
 		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, quads, isovalue);
 		points.resize(4);
 		points[0][0] = -1.0;
-		points[0][1] = 0;
+		points[0][1] = 0.0;
 		points[0][2] = 1.0;
 		points[1][0] = 1.0;
-		points[1][1] = 0;
+		points[1][1] = 0.0;
 		points[1][2] = 1.0;
 		points[2][0] = -1.0;
-		points[2][1] = 0;
+		points[2][1] = 0.0;
 		points[2][2] = -1.0;
 		points[3][0] = 1.0;
-		points[3][1] = 0;
+		points[3][1] = 0.0;
 		points[3][2] = -1.0;
 		quads.resize(1);
 		quads[0][0] = 0;
@@ -522,7 +528,6 @@ protected:
 	
 	void testOpenVDB_ConcatenateTriangles()
 	{
-		// check the amount
 		openvdb::initialize();
 		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
 		grid = createBlock(2,1);	
@@ -545,6 +550,7 @@ protected:
 		//std::cout << triangles_combined[triangles.size()][1] << std::endl; 
 		//std::cout << triangles_combined[triangles.size()][2] << std::endl; 
 
+		// check the amount
 		int tri_size = triangles_combined.size();
 		int assert_size = (quads.size()*2) + triangles.size();
 		CPPUNIT_ASSERT_EQUAL(assert_size, tri_size);
@@ -636,6 +642,69 @@ protected:
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][2], result_triangles[i][2],0.01);
 		}
 	}
+	
+	void testOpenVDB_ComputeVertexNormals()
+	{
+
+	}
+
+
+	void testOpenVDB_ComputeTriangleNormals()
+	{
+	
+		int tri_size = 1;
+		int xyzs = 3;
+		std::vector<std::vector<float> > triangles(tri_size, std::vector<float>(xyzs));
+		triangles[0][0] = 0; 
+		triangles[0][1] = 1; 
+		triangles[0][2] = 2; 
+		
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
+		grid = createBlock(1,1);	
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.5;
+		float adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, quads, isovalue);
+		points.resize(2);
+		// both zs == 0 i.e. the triangle is parallel to xy plane
+		// normal should be 00-1
+		points[0][0] = 1.0;
+		points[0][1] = 0.5;
+		points[0][2] = 0.0;
+		points[1][0] = 10.0;
+		points[1][1] = 1.5;
+		points[1][2] = 0.0;
+		
+		std::vector<std::vector<float> > normals;
+		
+		normals = ComputeTriangleNormals(points, triangles);
+
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][0],0.01);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][1],0.01);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(-1, normals[0][2],0.01);
+	
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 };

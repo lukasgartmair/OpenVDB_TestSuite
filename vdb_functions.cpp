@@ -1,4 +1,5 @@
 # include "vdb_functions.h"
+#include <math.h>
 
 // sudo g++ -L/usr/lib/x86_64-linux-gnu  vdb_test1.cpp -ltbb -lopenvdb -lHalf -o openvdb_test1
 
@@ -190,4 +191,107 @@ std::vector<std::vector<float> > DecreaseTriangleVertexIndicesByN(std::vector<st
 	return triangles_indices_decreased;
 }
 
+
+float GetLengthOfVector(std::vector<float> vec)
+{
+	float length = sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
+	return length;
+}
+
+std::vector<float> NormalizeVector(std::vector<float> vec)
+{
+	int xyzs = 3;
+	float length = GetLengthOfVector(vec);
+	
+	std::vector<float> normal(xyzs);
+	
+	normal[0] = vec[0]/length;
+	normal[1] = vec[1]/length;
+	normal[2] = vec[2]/length;
+	
+	return normal;
+}
+
+
+std::vector<float>  GetCrossProduct(std::vector<float> vec1, std::vector<float> vec2)
+{
+	//http://www.cplusplus.com/forum/general/77959/
+
+	int xyzs = 3;
+	std::vector<float> crossproduct(xyzs);
+
+        //Cross product formula 
+	crossproduct[0] = (vec1[1] * vec2[2]) - (vec1[2] * vec2[1]);
+	crossproduct[1] = (vec1[2] * vec2[0]) - (vec1[0] * vec2[2]);
+	crossproduct[2] = (vec1[0] * vec2[1]) - (vec1[1] * vec2[0]);
+
+	return crossproduct;
+}
+
+std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles)
+{
+	int vertices_per_triangle = 3;
+	int number_of_triangles = triangles.size();
+	std::vector<std::vector<float> > triangle_normals(number_of_triangles, std::vector<float>(vertices_per_triangle));
+	
+	for (int i=0;i<triangles.size();i++)
+	{
+		// just take both the first two verts of the triangle
+		int xyzs = 3;
+		std::vector<float> vec1(xyzs);
+		std::vector<float> vec2(xyzs);
+		std::vector<float> normal(xyzs);
+		std::vector<float> crossproduct;
+		
+		//conversion
+		vec1[0] = points[triangles[i][0]].x();
+		vec1[1] = points[triangles[i][0]].y();
+		vec1[2] = points[triangles[i][0]].z();
+		vec2[0] = points[triangles[i][1]].x();
+		vec2[1] = points[triangles[i][1]].y();
+		vec2[2] = points[triangles[i][1]].z();
+		
+		// calculation
+		crossproduct = GetCrossProduct(vec1,vec2);
+		
+		normal = NormalizeVector(crossproduct);
+		
+		// write
+		triangle_normals[i] = normal;
+	}
+	return triangle_normals;
+
+}
+/*
+std::vector<float> triangleNormalFromVertex(std::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, int face_id, int vertex_id) 
+//http://stackoverflow.com/questions/18519586/calculate-normal-per-vertex-opengl
+	{
+	   //This assumes that A->B->C is a counter-clockwise ordering
+	   openvdb::Vec3s A = points[triangles[face_id][0]];
+	   openvdb::Vec3s B = points[triangles[face_id][1]];
+	   openvdb::Vec3s C = points[triangles[face_id][2]];
+
+	   std::vector<float> N = cross(B-A,C-A);
+	   float sin_alpha = length(N) / (length(B-A) * length(C-A) );
+	   return normalize(N) * asin(sin_alpha);
+	}
+
+void computeNormals() 
+{
+    for (int v=0;v<points.size(),v++) 
+    {
+	std::vector<float>D N (0,0,0);
+	for (int i=0;i<triangles.size();++i) 
+	{
+	    if (triangles[i][0] == points[v] | triangles[i][1] == points[v] | triangles[i][0] == points[v]) 
+	    {
+	        int VertexID = index_of_v_in_triangle(i,v); //Can be 0,1 or 2
+	        N = N + triangleNormalFromVertex(triangles, points, i, VertexID);
+	    }
+	}
+	N = normalize(N);
+	add_N_to_normals_for_vertex_v(N,v);
+    }
+}
+*/
 
