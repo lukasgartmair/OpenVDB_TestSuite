@@ -164,3 +164,17 @@ std::vector<std::vector<float> > concatenateTriangleVectors(std::vector<openvdb:
 	return triangles_combined;
 }
 
+std::vector<std::vector<float> > IncreaseTriangleVertexIndicesByN(std::vector<std::vector<float> > triangles, int N)
+{
+	int xyzs = 3;
+	std::vector<std::vector<float> > triangles_indices_increased(triangles.size(), std::vector<float>(xyzs));
+	for (int i=0;i<triangles.size();i++)
+	{
+		triangles_indices_increased[i][0] = triangles[i][0] + N;
+		triangles_indices_increased[i][1] = triangles[i][1] + N;
+		triangles_indices_increased[i][2] = triangles[i][2] + N;
+	}
+	return triangles_indices_increased;
+}
+
+
