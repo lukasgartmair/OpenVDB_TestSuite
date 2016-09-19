@@ -37,6 +37,9 @@ std::vector<std::vector<float> > DecreaseTriangleVertexIndicesByN(std::vector<st
 float GetLengthOfVector(std::vector<float> vec);
 std::vector<float> NormalizeVector(std::vector<float> vec);
 std::vector<float> GetCrossProduct(std::vector<float> vec1, std::vector<float> vec2);
-std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles);
+std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<std::vector<float> > points, std::vector<std::vector<float> > triangles);
+std::vector<std::vector<float> > ComputeTriangleNormalsVDB(std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles);
+std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangle_normals);
+
 
 #endif

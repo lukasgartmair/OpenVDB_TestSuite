@@ -646,18 +646,18 @@ protected:
 	void testOpenVDB_ComputeVertexNormals()
 	{
 
-	}
-
-
-	void testOpenVDB_ComputeTriangleNormals()
-	{
-	
-		int tri_size = 1;
+		int tri_size = 2;
 		int xyzs = 3;
 		std::vector<std::vector<float> > triangles(tri_size, std::vector<float>(xyzs));
+		
 		triangles[0][0] = 0; 
 		triangles[0][1] = 1; 
 		triangles[0][2] = 2; 
+		triangles[1][0] = 0; 
+		triangles[1][1] = 2; 
+		triangles[1][2] = 3; 
+	
+		// vdb version
 		
 		openvdb::initialize();
 		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
@@ -668,24 +668,115 @@ protected:
 		float isovalue=0.5;
 		float adaptivity=0;
 		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, quads, isovalue);
-		points.resize(2);
-		// both zs == 0 i.e. the triangle is parallel to xy plane
-		// normal should be 00-1
-		points[0][0] = 1.0;
-		points[0][1] = 0.5;
-		points[0][2] = 0.0;
-		points[1][0] = 10.0;
-		points[1][1] = 1.5;
-		points[1][2] = 0.0;
+		points.resize(4);
 		
+		points[0][0] = 0;
+		points[0][1] = 0;
+		points[0][2] = 0;
+		points[1][0] = 1.0;
+		points[1][1] = 0;
+		points[1][2] = 0;
+		points[2][0] = 1.0;
+		points[2][1] = 1.0;
+		points[2][2] = 1.0;
+		points[3][0] = 0.0;
+		points[3][1] = 1.0;
+		points[3][2] = 1.0;
+
+		std::vector<std::vector<float> > triangle_normals;
+		
+		triangle_normals = ComputeTriangleNormalsVDB(points, triangles);
+	
+		std::vector<std::vector<float> > vertex_normals;
+	
+		vertex_normals = ComputeVertexNormals(triangles, points, triangle_normals);
+
+	
+		// check the amount
+		int size_normals = 4;
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(size_normals, vertex_normals.size(),0.01);
+		// check the content
+		
+		std::cout << vertex_normals[0][0] << std::endl; 
+		std::cout << vertex_normals[0][1] << std::endl; 
+		std::cout << vertex_normals[0][2] << std::endl; 
+		std::cout << vertex_normals[1][0] << std::endl; 
+		std::cout << vertex_normals[1][1] << std::endl; 
+		std::cout << vertex_normals[1][2] << std::endl; 
+		std::cout << vertex_normals[2][0] << std::endl; 
+		std::cout << vertex_normals[2][1] << std::endl; 
+		std::cout << vertex_normals[2][2] << std::endl;
+		std::cout << vertex_normals[3][0] << std::endl; 
+		std::cout << vertex_normals[3][1] << std::endl; 
+		std::cout << vertex_normals[3][2] << std::endl;  
+		
+	}
+
+
+	void testOpenVDB_ComputeTriangleNormals()
+	{
+	
+		int tri_size = 2;
+		int xyzs = 3;
 		std::vector<std::vector<float> > normals;
 		
-		normals = ComputeTriangleNormals(points, triangles);
+		// vdb version
+		
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
+		grid = createBlock(1,1);	
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.5;
+		float adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, quads, isovalue);
+		
+		points.resize(3);
+		// both zs == 0 i.e. the triangle is parallel to xy plane
+		// normal should be 001
+		
+		std::vector<std::vector<float> > triangle(1, std::vector<float>(xyzs));
+		triangle[0][0] = 1; 
+		triangle[0][1] = 2; 
+		triangle[0][2] = 0; 
+		
+		points[0][0] = 0.0;
+		points[0][1] = 0.0;
+		points[0][2] = 0.0;
+		points[1][0] = 1.0;
+		points[1][1] = 0.0;
+		points[1][2] = 0.0;
+		points[2][0] = 1.0;
+		points[2][1] = 1.0;
+		points[2][2] = 0.0;
+		
+		normals = ComputeTriangleNormalsVDB(points, triangle);
 
 		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][0],0.01);
 		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][1],0.01);
-		CPPUNIT_ASSERT_DOUBLES_EQUAL(-1, normals[0][2],0.01);
-	
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(1, normals[0][2],0.01);
+
+		// std::vector version
+		int points_size = 3;
+		std::vector<std::vector<float> > std_points(points_size, std::vector<float>(xyzs));
+		
+		std_points[0][0] = 0.0;
+		std_points[0][1] = 0.0;
+		std_points[0][2] = 0.0;
+		std_points[1][0] = 1.0;
+		std_points[1][1] = 0.0;
+		std_points[1][2] = 0.0;
+		std_points[2][0] = 1.0;
+		std_points[2][1] = 1.0;
+		std_points[2][2] = 0.0;
+		
+		normals = ComputeTriangleNormals(std_points, triangle);
+
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][0],0.01);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][1],0.01);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(1, normals[0][2],0.01);
+
 	}
 
 

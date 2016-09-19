@@ -228,7 +228,7 @@ std::vector<float>  GetCrossProduct(std::vector<float> vec1, std::vector<float> 
 	return crossproduct;
 }
 
-std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles)
+std::vector<std::vector<float> > ComputeTriangleNormalsVDB(std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles)
 {
 	int vertices_per_triangle = 3;
 	int number_of_triangles = triangles.size();
@@ -244,12 +244,14 @@ std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<openvdb::Vec
 		std::vector<float> crossproduct;
 		
 		//conversion
-		vec1[0] = points[triangles[i][0]].x();
-		vec1[1] = points[triangles[i][0]].y();
-		vec1[2] = points[triangles[i][0]].z();
-		vec2[0] = points[triangles[i][1]].x();
-		vec2[1] = points[triangles[i][1]].y();
-		vec2[2] = points[triangles[i][1]].z();
+		//https://www.opengl.org/wiki/Calculating_a_Surface_Normal
+		// U = p2 - p1 and the vector V = p3 - p1
+		vec1[0] = points[triangles[i][1]].x() - points[triangles[i][0]].x();
+		vec1[1] = points[triangles[i][1]].y() - points[triangles[i][0]].y();
+		vec1[2] = points[triangles[i][1]].z() - points[triangles[i][0]].z();
+		vec2[0] = points[triangles[i][2]].x() - points[triangles[i][0]].x();
+		vec2[1] = points[triangles[i][2]].y() - points[triangles[i][0]].y();
+		vec2[2] = points[triangles[i][2]].z() - points[triangles[i][0]].z();
 		
 		// calculation
 		crossproduct = GetCrossProduct(vec1,vec2);
@@ -262,36 +264,83 @@ std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<openvdb::Vec
 	return triangle_normals;
 
 }
-/*
-std::vector<float> triangleNormalFromVertex(std::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, int face_id, int vertex_id) 
-//http://stackoverflow.com/questions/18519586/calculate-normal-per-vertex-opengl
-	{
-	   //This assumes that A->B->C is a counter-clockwise ordering
-	   openvdb::Vec3s A = points[triangles[face_id][0]];
-	   openvdb::Vec3s B = points[triangles[face_id][1]];
-	   openvdb::Vec3s C = points[triangles[face_id][2]];
 
-	   std::vector<float> N = cross(B-A,C-A);
-	   float sin_alpha = length(N) / (length(B-A) * length(C-A) );
-	   return normalize(N) * asin(sin_alpha);
-	}
-
-void computeNormals() 
+std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<std::vector<float> > points, std::vector<std::vector<float> > triangles)
 {
-    for (int v=0;v<points.size(),v++) 
-    {
-	std::vector<float>D N (0,0,0);
-	for (int i=0;i<triangles.size();++i) 
+	int vertices_per_triangle = 3;
+	int number_of_triangles = triangles.size();
+	std::vector<std::vector<float> > triangle_normals(number_of_triangles, std::vector<float>(vertices_per_triangle));
+	
+	for (int i=0;i<triangles.size();i++)
 	{
-	    if (triangles[i][0] == points[v] | triangles[i][1] == points[v] | triangles[i][0] == points[v]) 
-	    {
-	        int VertexID = index_of_v_in_triangle(i,v); //Can be 0,1 or 2
-	        N = N + triangleNormalFromVertex(triangles, points, i, VertexID);
-	    }
+		int xyzs = 3;
+		std::vector<float> vec1(xyzs);
+		std::vector<float> vec2(xyzs);
+		std::vector<float> normal(xyzs);
+		std::vector<float> crossproduct;
+		
+		//conversion
+		//https://www.opengl.org/wiki/Calculating_a_Surface_Normal
+		// U = p2 - p1 and the vector V = p3 - p1
+		vec1[0] = points[triangles[i][1]][0] - points[triangles[i][0]][0];
+		vec1[1] = points[triangles[i][1]][1] - points[triangles[i][0]][1];
+		vec1[2] = points[triangles[i][1]][2] - points[triangles[i][0]][2];
+		vec2[0] = points[triangles[i][2]][0] - points[triangles[i][0]][0];
+		vec2[1] = points[triangles[i][2]][1] - points[triangles[i][0]][1];
+		vec2[2] = points[triangles[i][2]][2] - points[triangles[i][0]][2];
+		
+		// calculation
+		crossproduct = GetCrossProduct(vec1,vec2);
+		
+		normal = NormalizeVector(crossproduct);
+		
+		// write
+		
+		triangle_normals[i] = normal;
 	}
-	N = normalize(N);
-	add_N_to_normals_for_vertex_v(N,v);
-    }
+	return triangle_normals;
+
 }
-*/
+
+std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangle_normals)
+{
+	std::vector<std::vector<float> > vertex_normals;
+	//average the normals of all the faces that share a triangle vertex
+	int xyzs = 0;
+	for (int v=0;v<points.size();v++) 
+	{
+		
+		// i dont want to run through all elements but is there a faster way?
+		float x;
+		float y; 
+		float z;
+		float shared_triangle_counter = 0;
+		
+		for (int j=0;j<triangles.size();j++)
+		{
+			if ((triangles[j][0] == v) || (triangles[j][1] == v) || (triangles[j][2] == v))
+			{
+				
+				x += triangle_normals[j][0];
+				y += triangle_normals[j][1];
+				z += triangle_normals[j][2];
+				shared_triangle_counter += 1;
+			}
+		} 
+		 
+		std::vector<float> vertex_normal = {0,0,0};
+
+		vertex_normal[0] = x/shared_triangle_counter;
+		vertex_normal[1] = y/shared_triangle_counter;
+		vertex_normal[2] = z/shared_triangle_counter;
+		
+		std::vector<float> normalized_vertex_normal;
+		
+		normalized_vertex_normal = NormalizeVector(vertex_normal);
+		
+		vertex_normals.push_back(normalized_vertex_normal);
+	}
+	return vertex_normals;
+}
+
 
