@@ -236,7 +236,6 @@ std::vector<std::vector<float> > ComputeTriangleNormalsVDB(std::vector<openvdb::
 	
 	for (int i=0;i<triangles.size();i++)
 	{
-		// just take both the first two verts of the triangle
 		int xyzs = 3;
 		std::vector<float> vec1(xyzs);
 		std::vector<float> vec2(xyzs);
@@ -304,41 +303,30 @@ std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<std::vector<
 
 std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangle_normals)
 {
-	std::vector<std::vector<float> > vertex_normals;
+	int xyzs = 3;
+	std::vector<std::vector<float> > vertex_normals(points.size(), std::vector<float>(xyzs));
 	//average the normals of all the faces that share a triangle vertex
-	int xyzs = 0;
-	for (int v=0;v<points.size();v++) 
+	for (int i=0;i<triangles.size();i++) 
 	{
+		// http://stackoverflow.com/questions/16340931/calculating-vertex-normals-of-a-mesh
+		//Think it otherway round: Iterate over the faces and add to the normal of the vertex.
 		
-		// i dont want to run through all elements but is there a faster way?
-		float x;
-		float y; 
-		float z;
-		float shared_triangle_counter = 0;
 		
-		for (int j=0;j<triangles.size();j++)
+		for (int j=0;j<xyzs;j++)
 		{
-			if ((triangles[j][0] == v) || (triangles[j][1] == v) || (triangles[j][2] == v))
+			int current_vertex = triangles[i][j];
+			for (int k=0;k<xyzs;k++)
 			{
-				
-				x += triangle_normals[j][0];
-				y += triangle_normals[j][1];
-				z += triangle_normals[j][2];
-				shared_triangle_counter += 1;
+				vertex_normals[current_vertex][k] += triangle_normals[i][k];
 			}
-		} 
-		 
-		std::vector<float> vertex_normal = {0,0,0};
+		}
 
-		vertex_normal[0] = x/shared_triangle_counter;
-		vertex_normal[1] = y/shared_triangle_counter;
-		vertex_normal[2] = z/shared_triangle_counter;
-		
-		std::vector<float> normalized_vertex_normal;
-		
-		normalized_vertex_normal = NormalizeVector(vertex_normal);
-		
-		vertex_normals.push_back(normalized_vertex_normal);
+		// https://www.opengl.org/discussion_boards/showthread.php/126927-Averaging-normals
+		// AvarageNormal = (Normal1 + Normal2 + Normal3) / length(Normal1 + Normal2 + Normal3); 	
+	}
+	for (int i=0;i<vertex_normals.size();i++) 	
+	{
+		vertex_normals[i] = NormalizeVector(vertex_normals[i]);
 	}
 	return vertex_normals;
 }
