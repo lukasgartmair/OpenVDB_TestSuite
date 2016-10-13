@@ -334,7 +334,7 @@ float FindVertexAngle(std::vector<std::vector<float> > triangles, int face, int 
 }
 
 
-std::vector<std::vector<float> >  ComputeVertexNormals(sctd::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangle_normals)
+std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangle_normals)
 {
 	int xyzs = 3;
 	std::vector<std::vector<float> > vertex_normals(points.size(), std::vector<float>(xyzs));
