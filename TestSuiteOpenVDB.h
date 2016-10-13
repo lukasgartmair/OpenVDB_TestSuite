@@ -63,6 +63,9 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test14 - compute triangle normals ",
 				&TestOpenVDB::testOpenVDB_ComputeTriangleNormals ));
 
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test15 - compute vertex triangle angle ",
+				&TestOpenVDB::testOpenVDB_ComputeAngle ));
+
 
 		return suiteOfTests;
 	}
@@ -780,6 +783,31 @@ protected:
 	}
 
 
+	void testOpenVDB_ComputeAngle()
+	{
+	
+		int face = 0;
+		std::vector<openvdb::Vec3s> points;
+		points[0][0] = 0;
+		points[0][1] = 0;
+		points[0][2] = 0;
+		points[1][0] = 1.0;
+		points[1][1] = 0;
+		points[1][2] = 0;
+		points[2][0] = 1.0;
+		points[2][1] = 1.0;
+		points[2][2] = 1.0;
+
+		std::vector<std::vector<float> > triangle(1, std::vector<float>(3));
+		triangle[0][0] = 0; 
+		triangle[0][1] = 1; 
+		triangle[0][2] = 2;
+		
+		int corner = 0;
+		float angle = FindVertexAngle(triangle, face, corner, points);
+		//CPPUNIT_ASSERT_DOUBLES_EQUAL(90 , angle,0.01);
+	
+	}
 
 
 

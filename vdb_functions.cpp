@@ -1,5 +1,8 @@
 # include "vdb_functions.h"
 #include <math.h>
+#include <numeric> // for inner product
+#include <vector>
+#include <functional>
 
 // sudo g++ -L/usr/lib/x86_64-linux-gnu  vdb_test1.cpp -ltbb -lopenvdb -lHalf -o openvdb_test1
 
@@ -301,7 +304,37 @@ std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<std::vector<
 
 }
 
-std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangle_normals)
+float FindVertexAngle(std::vector<std::vector<float> > triangles, int face, int corner, std::vector<openvdb::Vec3s> points) 
+{
+//https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2016/ENU/Max-SDK/files/GUID-0FCB4578-77F8-4F05-99CD-349E85F13639-htm.html
+// Corner is 0, 1, or 2 -- which corner do we want the angle of?
+
+	int xyzs = 3;
+	int cnext = (corner+1)%3;
+	int cprev = (corner+2)%3;
+	// Get edge vectors:
+	std::vector<float> A(xyzs);
+	std::vector<float> B(xyzs);
+
+	for (int i=0;i<xyzs;i++)
+	{
+		A[i] = points[triangles[face][cnext]][i] - points[triangles[face][corner]][i];
+		B[i] = points[triangles[face][corner]][i] - points[triangles[face][cprev]][i];
+	}
+	// Normalize the edge-vectors, but return 0 if either has 0 length.
+	A = NormalizeVector(A);
+	B = NormalizeVector(B);
+
+	// The dot product gives the cosine of the angle:
+	//http://en.cppreference.com/w/cpp/algorithm/inner_product
+	float dp = std::inner_product(A.begin(), A.end(), B.begin(), 0.0);
+	if (dp>1) dp=1.0f; // shouldn't happen, but might
+	if (dp<-1) dp=-1.0f; // shouldn't happen, but might
+	return acos(dp);
+}
+
+
+std::vector<std::vector<float> >  ComputeVertexNormals(sctd::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangle_normals)
 {
 	int xyzs = 3;
 	std::vector<std::vector<float> > vertex_normals(points.size(), std::vector<float>(xyzs));
@@ -319,11 +352,12 @@ std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<f
 			{
 				vertex_normals[current_vertex][k] += triangle_normals[i][k];
 			}
-		}
-
-		// https://www.opengl.org/discussion_boards/showthread.php/126927-Averaging-normals
-		// AvarageNormal = (Normal1 + Normal2 + Normal3) / length(Normal1 + Normal2 + Normal3); 	
+		}	
 	}
+	
+	// https://www.opengl.org/discussion_boards/showthread.php/126927-Averaging-normals
+	// AvarageNormal = (Normal1 + Normal2 + Normal3) / length(Normal1 + Normal2 + Normal3); 
+	
 	for (int i=0;i<vertex_normals.size();i++) 	
 	{
 		vertex_normals[i] = NormalizeVector(vertex_normals[i]);
