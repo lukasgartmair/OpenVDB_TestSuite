@@ -304,35 +304,6 @@ std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<std::vector<
 
 }
 
-float FindVertexAngle(std::vector<std::vector<float> > triangles, int face, int corner, std::vector<openvdb::Vec3s> points) 
-{
-//https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2016/ENU/Max-SDK/files/GUID-0FCB4578-77F8-4F05-99CD-349E85F13639-htm.html
-// Corner is 0, 1, or 2 -- which corner do we want the angle of?
-
-	int xyzs = 3;
-	int cnext = (corner+1)%3;
-	int cprev = (corner+2)%3;
-	// Get edge vectors:
-	std::vector<float> A(xyzs);
-	std::vector<float> B(xyzs);
-
-	for (int i=0;i<xyzs;i++)
-	{
-		A[i] = points[triangles[face][cnext]][i] - points[triangles[face][corner]][i];
-		B[i] = points[triangles[face][corner]][i] - points[triangles[face][cprev]][i];
-	}
-	// Normalize the edge-vectors, but return 0 if either has 0 length.
-	A = NormalizeVector(A);
-	B = NormalizeVector(B);
-
-	// The dot product gives the cosine of the angle:
-	//http://en.cppreference.com/w/cpp/algorithm/inner_product
-	float dp = std::inner_product(A.begin(), A.end(), B.begin(), 0.0);
-	if (dp>1) dp=1.0f; // shouldn't happen, but might
-	if (dp<-1) dp=-1.0f; // shouldn't happen, but might
-	return acos(dp);
-}
-
 
 std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangle_normals)
 {

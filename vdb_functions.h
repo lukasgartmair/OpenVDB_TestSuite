@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <openvdb/tools/Composite.h>
+#include <openvdb/math/Coord.h>
 
 typedef struct coord_main {
 float x;
@@ -40,7 +41,6 @@ std::vector<float> GetCrossProduct(std::vector<float> vec1, std::vector<float> v
 std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<std::vector<float> > points, std::vector<std::vector<float> > triangles);
 std::vector<std::vector<float> > ComputeTriangleNormalsVDB(std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles);
 std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangle_normals);
-float FindVertexAngle(std::vector<std::vector<float> > triangles, int face, int corner, std::vector<openvdb::Vec3s> points);
 
 
 #endif

@@ -63,8 +63,9 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test14 - compute triangle normals ",
 				&TestOpenVDB::testOpenVDB_ComputeTriangleNormals ));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test15 - compute vertex triangle angle ",
-				&TestOpenVDB::testOpenVDB_ComputeAngle ));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test15 - bounding box ",
+				&TestOpenVDB::testOpenVDB_BoundingBox));
 
 
 		return suiteOfTests;
@@ -782,33 +783,33 @@ protected:
 
 	}
 
-
-	void testOpenVDB_ComputeAngle()
+	void testOpenVDB_BoundingBox()
 	{
-	
-		int face = 0;
-		std::vector<openvdb::Vec3s> points;
-		points[0][0] = 0;
-		points[0][1] = 0;
-		points[0][2] = 0;
-		points[1][0] = 1.0;
-		points[1][1] = 0;
-		points[1][2] = 0;
-		points[2][0] = 1.0;
-		points[2][1] = 1.0;
-		points[2][2] = 1.0;
 
-		std::vector<std::vector<float> > triangle(1, std::vector<float>(3));
-		triangle[0][0] = 0; 
-		triangle[0][1] = 1; 
-		triangle[0][2] = 2;
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
+		grid = createBlock(1,15);	
+
+		openvdb::math::CoordBBox bounding_box = openvdb::math::CoordBBox();
+		bounding_box = grid->evalActiveVoxelBoundingBox();
+
+ 		//CoordBBox (ValueType x_min, ValueType y_min, ValueType z_min, ValueType x_max, ValueType y_max, ValueType z_max)
+ 		//Construct from individual components of the min and max bounds
+
+		//std::cout << bounding_box << std::endl; 
+
+/*
+
+		assert_box = openvdb::CoordBBox();
+
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][0],0.01);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][1],0.01);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(1, normals[0][2],0.01);
+*/		
+	
 		
-		int corner = 0;
-		float angle = FindVertexAngle(triangle, face, corner, points);
-		//CPPUNIT_ASSERT_DOUBLES_EQUAL(90 , angle,0.01);
-	
-	}
 
+	}
 
 
 
