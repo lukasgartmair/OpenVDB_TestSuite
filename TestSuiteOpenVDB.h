@@ -788,25 +788,17 @@ protected:
 
 		openvdb::initialize();
 		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
-		grid = createBlock(1,15);	
+		grid = createBlock(15,1);	
 
 		openvdb::math::CoordBBox bounding_box = openvdb::math::CoordBBox();
 		bounding_box = grid->evalActiveVoxelBoundingBox();
 
- 		//CoordBBox (ValueType x_min, ValueType y_min, ValueType z_min, ValueType x_max, ValueType y_max, ValueType z_max)
- 		//Construct from individual components of the min and max bounds
+		std::cout << bounding_box.getStart() << std::endl;
+            	std::cout << bounding_box.getStart()[0] << std::endl;
 
-		//std::cout << bounding_box << std::endl; 
-
-/*
-
-		assert_box = openvdb::CoordBBox();
-
-		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][0],0.01);
-		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][1],0.01);
-		CPPUNIT_ASSERT_DOUBLES_EQUAL(1, normals[0][2],0.01);
-*/		
-	
+		std::cout << bounding_box.getEnd() << std::endl;
+		std::cout << bounding_box.getCenter() << std::endl;
+		std::cout << bounding_box.dim() << std::endl;
 		
 
 	}

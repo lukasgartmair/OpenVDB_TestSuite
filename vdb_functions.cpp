@@ -337,3 +337,22 @@ std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<f
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
