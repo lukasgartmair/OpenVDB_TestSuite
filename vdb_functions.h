@@ -42,5 +42,9 @@ std::vector<std::vector<float> > ComputeTriangleNormals(std::vector<std::vector<
 std::vector<std::vector<float> > ComputeTriangleNormalsVDB(std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles);
 std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<float> > triangles, std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangle_normals);
 
+// IO
+void ExportMeshAsObj(std::string filename, std::vector<openvdb::Vec3s> points, std::vector<openvdb::Vec3I> triangles, std::vector<openvdb::Vec4I> quads);
+void ExportMeshAsVDB(openvdb::FloatGrid::Ptr grid);
+
 
 #endif

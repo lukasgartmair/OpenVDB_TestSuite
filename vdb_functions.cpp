@@ -338,7 +338,30 @@ std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<f
 
 
 
+void ExportMeshAsObj(std::string filename, std::vector<openvdb::Vec3s> points, std::vector<openvdb::Vec3I> triangles, std::vector<openvdb::Vec4I> quads)
+{
 
+	FILE* f = fopen("isosurface_mesh.obj","wt");
+
+	for(int i=0;i<points.size();i++) fprintf(f, "v %lf %lf %lf\n", points[i].x(), points[i].y(), points[i].z());
+	for(int i=0;i<triangles.size();i++) fprintf(f, "f %d %d %d\n", triangles[i][2]+1, triangles[i][1]+1, triangles[i][0]+1);
+	for(int i=0;i<quads.size();i++) fprintf(f, "f %d %d %d %d\n", quads[i][3]+1, quads[i][2]+1, quads[i][1]+1, quads[i][0]+1);
+
+	fclose(f);
+
+}
+
+void ExportMeshAsVDB(openvdb::FloatGrid::Ptr grid)
+{
+
+	openvdb::io::File file("isosurface_mesh.vdb");
+	openvdb::GridPtrVec grids;
+	grids.push_back(grid);
+
+	file.write(grids);
+	file.close();
+
+}
 
 
 
