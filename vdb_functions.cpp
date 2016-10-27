@@ -336,12 +336,12 @@ std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<f
 	return vertex_normals;
 }
 
-std::vector<float> ComputeTriangleFaces(std::vector<std::vector<float> > points, std::vector<std::vector<float> > triangles)
+std::vector<float> ComputeTriangleAreas(std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles)
 {
 // http://math.stackexchange.com/questions/128991/how-to-calculate-area-of-3d-triangle
 //Say you have 3 points A,B,C. Find the angle between AB and AC using dot product (i.e. AB⋅AC=|AB||AC|cosθ) and then you can find the area of the triangle using 
 
-	<std::vector<float> triangle_areas(triangles.size());
+	std::vector<float> triangle_areas(triangles.size());
 
 	//1st create 2 common starting point vectors
 	std::vector<float> P12(3);
@@ -355,13 +355,13 @@ std::vector<float> ComputeTriangleFaces(std::vector<std::vector<float> > points,
 		// P1P2→=<b1−a1,b2−a2,b3−a3>=<x1,y1,z1>
 		// P1P3→=<c1−a1,c2−a2,c3−a3>=<x2,y2,z2>
 
-		for (int j=0;j<xyzs;j++)
-		{
-			P12[j] = points[triangles[i][1]][j] - points[triangles[i][0]][j];
+		P12[0] = points[triangles[i][1]].x() - points[triangles[i][0]].x();
+		P12[1] = points[triangles[i][1]].y() - points[triangles[i][0]].y();
+		P12[2] = points[triangles[i][1]].z() - points[triangles[i][0]].z();
 
-			P13[j] = points[triangles[i][2]][j] - points[triangles[i][0]][j];
-
-		}
+		P13[0] = points[triangles[i][2]].x() - points[triangles[i][0]].x();
+		P13[1] = points[triangles[i][2]].y() - points[triangles[i][0]].y();
+		P13[2] = points[triangles[i][2]].z() - points[triangles[i][0]].z();
 
 		std::vector<float> crossproduct(xyzs);
 
@@ -372,19 +372,19 @@ std::vector<float> ComputeTriangleFaces(std::vector<std::vector<float> > points,
 
 		float triangle_area = 0.5 * area_of_parallelogram;
 
-		triangle_areas.push_back(triangle_area);
+		triangle_areas[i] = triangle_area;
 
 	}
 
 	return triangle_areas;
 }
 
-void ExportTriangleAreas(std::string filename, std::vector<float> triangle_areas)
+void ExportTriangleAreas(std::vector<float> triangle_areas)
 {
 
 	FILE* f = fopen("exported_triangle_areas.txt","wt");
 
-	for(int i=0;i<triangle_areas.size();i++) fprintf(f, "%lf %lf\n", i ,triangle_areas[i]);
+	for(int i=0;i<triangle_areas.size();i++) fprintf(f, "%i %lf\n", i ,triangle_areas[i]);
 	fclose(f);
 
 }

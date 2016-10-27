@@ -63,9 +63,11 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test14 - compute triangle normals ",
 				&TestOpenVDB::testOpenVDB_ComputeTriangleNormals ));
 
-
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test15 - bounding box ",
 				&TestOpenVDB::testOpenVDB_BoundingBox));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test16 - triangle areas ",
+				&TestOpenVDB::testOpenVDB_TriangleAreas));
 
 
 		return suiteOfTests;
@@ -799,6 +801,38 @@ protected:
 		std::cout << bounding_box.getEnd() << std::endl;
 		std::cout << bounding_box.getCenter() << std::endl;
 		std::cout << bounding_box.dim() << std::endl;
+		
+	}
+
+	void testOpenVDB_TriangleAreas()
+	{
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
+		grid = createBlock(2,1);	
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec3I> triangles;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.5;
+		float adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
+
+
+		std::vector<std::vector<float> > triangles_from_splitted_quads;
+		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
+		
+		std::vector<std::vector<float> > triangles_combined;
+		
+		triangles_combined = concatenateTriangleVectors(triangles, triangles_from_splitted_quads);
+
+
+		std::vector<float> triangle_areas(triangles_combined.size());
+		triangle_areas = ComputeTriangleAreas(points, triangles_combined);
+		
+		std::cout << triangle_areas[0] << std::endl; 
+		std::cout << triangle_areas[0] << std::endl; 
+		std::cout << triangle_areas[0] << std::endl; 
+
 		
 
 	}
