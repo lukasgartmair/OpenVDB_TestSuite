@@ -6,6 +6,7 @@
 #include <cppunit/TestSuite.h>
 #include <cppunit/TestCase.h>
 
+
 #include "vdb_functions.h"
 
 #include <algorithm>    // std::min
@@ -68,6 +69,18 @@ public:
 
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test16 - triangle areas ",
 				&TestOpenVDB::testOpenVDB_TriangleAreas));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test17 - export triangles to obj ",
+				&TestOpenVDB::testOpenVDB_ExportTriangles));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test18 - active / inactive voxels ",
+				&TestOpenVDB::testOpenVDB_ActiveInactiveVoxels));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test19 - get voxel coords ",
+				&TestOpenVDB::testOpenVDB_GetVoxelCoords));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test20 - find coord in vector ",
+				&TestOpenVDB::testOpenVDB_FindCoordInVector));
 
 
 		return suiteOfTests;
@@ -702,7 +715,7 @@ protected:
 		int size_normals = 4;
 		CPPUNIT_ASSERT_DOUBLES_EQUAL(size_normals, vertex_normals.size(),0.01);
 		// check the content
-		
+		/*
 		std::cout << vertex_normals[0][0] << std::endl; 
 		std::cout << vertex_normals[0][1] << std::endl; 
 		std::cout << vertex_normals[0][2] << std::endl; 
@@ -715,7 +728,7 @@ protected:
 		std::cout << vertex_normals[3][0] << std::endl; 
 		std::cout << vertex_normals[3][1] << std::endl; 
 		std::cout << vertex_normals[3][2] << std::endl;  
-		
+		*/
 	}
 
 
@@ -794,14 +807,14 @@ protected:
 
 		openvdb::math::CoordBBox bounding_box = openvdb::math::CoordBBox();
 		bounding_box = grid->evalActiveVoxelBoundingBox();
-
+/*
 		std::cout << bounding_box.getStart() << std::endl;
             	std::cout << bounding_box.getStart()[0] << std::endl;
 
 		std::cout << bounding_box.getEnd() << std::endl;
 		std::cout << bounding_box.getCenter() << std::endl;
 		std::cout << bounding_box.dim() << std::endl;
-		
+*/		
 	}
 
 	void testOpenVDB_TriangleAreas()
@@ -828,29 +841,158 @@ protected:
 
 		std::vector<float> triangle_areas(triangles_combined.size());
 		triangle_areas = ComputeTriangleAreas(points, triangles_combined);
+		/*
+		std::cout << triangle_areas[0] << std::endl; 
+		std::cout << triangle_areas[0] << std::endl; 
+		std::cout << triangle_areas[0] << std::endl; 
+		*/
+	}
+
+	void testOpenVDB_ExportTriangles()
+	{
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
+		grid = createBlock(2,1);	
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec3I> triangles;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.5;
+		float adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
+
+		std::vector<std::vector<float> > triangles_from_splitted_quads;
+		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
 		
-		std::cout << triangle_areas[0] << std::endl; 
-		std::cout << triangle_areas[0] << std::endl; 
-		std::cout << triangle_areas[0] << std::endl; 
+		std::vector<std::vector<float> > triangles_combined;
+		
+		triangles_combined = concatenateTriangleVectors(triangles, triangles_from_splitted_quads);
 
 		
+		ExportTriangleMeshAsObj(points, triangles_combined);
 
 	}
 
 
 
+	void testOpenVDB_ActiveInactiveVoxels()
+	{
+
+		// only iterate the active voxels
+		// so both the active and inactive voxels should have the value zero
+		// but nevertheless different activation states - is that possible?
+		// another possibility is to set the initial active value to one or something 
+		// unequal to zero and just overwrite it the first time of writing 
+
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
+		grid = createBlock(2,1);
+		openvdb::FloatGrid::Accessor accessor = grid->getAccessor();
+
+		int active_voxels = grid->activeVoxelCount();
+		int assert_voxel_number = 64;
+
+		float minVal = 0.0;
+		float maxVal = 0.0;
+		grid->evalMinMax(minVal,maxVal);
+		//std::cout << " eval min max denominator grid" << " = " << minVal << " , " << maxVal << std::endl;
+		//std::cout << " active voxel count denominator grid" << " = " << grid->activeVoxelCount() << std::endl;
+
+		for (openvdb::FloatGrid::ValueOnIter iter = grid->beginValueOn(); iter; ++iter)
+		{   
+				iter.setValue(0.0);
+		}
+
+		grid->evalMinMax(minVal,maxVal);
+
+		// are now all values zero but nevertheless different voxel states present?
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_voxel_number, active_voxels,0.01);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, maxVal,0.01);
+
+		// yes
+
+		// further check how to get the current state of a particular voxel
+	
+
+		openvdb::Coord ijk(0,0,0);
+		
+	}
 
 
 
+	void testOpenVDB_GetVoxelCoords()
+	{
 
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
+		grid = createBlock(2,1);
+		openvdb::FloatGrid::Accessor accessor = grid->getAccessor();
 
+		const int xyzs = 3;
 
+		std::vector<std::vector<float> > active_voxel_indices(grid->activeVoxelCount(), std::vector<float>(xyzs));
+		openvdb::Coord hkl;
 
+		int voxel_counter = 0;
+		for (openvdb::FloatGrid::ValueOnIter iter = grid->beginValueOn(); iter; ++iter)
+		{   
+	    			iter.setValue(0.0);
+			
+				hkl = iter.getCoord();
+				active_voxel_indices[voxel_counter][0] = hkl.x();
+				active_voxel_indices[voxel_counter][1] = hkl.y();
+				active_voxel_indices[voxel_counter][2] = hkl.z();
+				voxel_counter += 1;
+		}
+		
+		// is the voxel counter running properly?
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(grid->activeVoxelCount(), voxel_counter,0.01);
+	}
 
+	void testOpenVDB_FindCoordInVector()
+	{
 
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
+		grid = createBlock(2,1);
+		openvdb::FloatGrid::Accessor accessor = grid->getAccessor();
 
+		const int xyzs = 3;
 
+		std::vector<std::vector<float> > active_voxel_indices(grid->activeVoxelCount(), std::vector<float>(xyzs));
+		openvdb::Coord hkl;
 
+		int voxel_counter = 0;
+		for (openvdb::FloatGrid::ValueOnIter iter = grid->beginValueOn(); iter; ++iter)
+		{   
+	    			iter.setValue(0.0);
+			
+				hkl = iter.getCoord();
+				active_voxel_indices[voxel_counter][0] = hkl.x();
+				active_voxel_indices[voxel_counter][1] = hkl.y();
+				active_voxel_indices[voxel_counter][2] = hkl.z();
+				voxel_counter += 1;
+		}
+
+		//initialize a (0,0,0) vector
+		std::vector<float> vector_to_search(xyzs);
+
+		bool vector_found = false;
+
+		if(std::find(active_voxel_indices.begin(), active_voxel_indices.end(), vector_to_search ) != active_voxel_indices.end()) 
+		{
+			/* v contains x */
+			vector_found = true;
+		} 
+		else 
+		{
+			/* v does not contain x */
+			vector_found = false;		
+		}	
+
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(true, vector_found,0.01);	
+
+	}
 
 
 };

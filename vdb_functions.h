@@ -34,7 +34,6 @@ std::vector<std::vector<float> > IncreaseTriangleVertexIndicesByN(std::vector<st
 std::vector<std::vector<float> > DecreaseTriangleVertexIndicesByN(std::vector<std::vector<float> > triangles, int N);
 
 // vector stuff for normal calculation
-
 float GetLengthOfVector(std::vector<float> vec);
 std::vector<float> NormalizeVector(std::vector<float> vec);
 std::vector<float> GetCrossProduct(std::vector<float> vec1, std::vector<float> vec2);
@@ -45,8 +44,9 @@ std::vector<std::vector<float> >  ComputeVertexNormals(std::vector<std::vector<f
 std::vector<float> ComputeTriangleAreas(std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles);
 
 // IO
-void ExportMeshAsObj(std::string filename, std::vector<openvdb::Vec3s> points, std::vector<openvdb::Vec3I> triangles, std::vector<openvdb::Vec4I> quads);
+void ExportVDBMeshAsObj(std::vector<openvdb::Vec3s> points, std::vector<openvdb::Vec3I> triangles, std::vector<openvdb::Vec4I> quads);
 void ExportMeshAsVDB(openvdb::FloatGrid::Ptr grid);
 void ExportTriangleAreas(std::vector<float> triangle_areas);
+void ExportTriangleMeshAsObj( std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles);
 
 #endif

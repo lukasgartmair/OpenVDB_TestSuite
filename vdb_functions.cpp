@@ -389,10 +389,26 @@ void ExportTriangleAreas(std::vector<float> triangle_areas)
 
 }
 
-void ExportMeshAsObj(std::string filename, std::vector<openvdb::Vec3s> points, std::vector<openvdb::Vec3I> triangles, std::vector<openvdb::Vec4I> quads)
+void ExportTriangleMeshAsObj(std::vector<openvdb::Vec3s> points, std::vector<std::vector<float> > triangles)
 {
 
-	FILE* f = fopen("isosurface_mesh.obj","wt");
+	FILE* f = fopen("test_triangle_isosurface_mesh.obj","wt");
+
+	for(int i=0;i<points.size();i++) fprintf(f, "v %lf %lf %lf\n", points[i].x(), points[i].y(), points[i].z());
+	// why the heck did i store the triangles in a float vector??
+	// of course over the long run this has to be a integer vector
+	// the conversion here should be temporary
+	for(int i=0;i<triangles.size();i++) fprintf(f, "f %i %i %i\n", int(triangles[i][2]+1), int(triangles[i][1]+1), int(triangles[i][0]+1));
+
+	fclose(f);
+
+}
+
+
+void ExportVDBMeshAsObj(std::vector<openvdb::Vec3s> points, std::vector<openvdb::Vec3I> triangles, std::vector<openvdb::Vec4I> quads)
+{
+
+	FILE* f = fopen("vdb_isosurface_mesh.obj","wt");
 
 	for(int i=0;i<points.size();i++) fprintf(f, "v %lf %lf %lf\n", points[i].x(), points[i].y(), points[i].z());
 	for(int i=0;i<triangles.size();i++) fprintf(f, "f %d %d %d\n", triangles[i][2]+1, triangles[i][1]+1, triangles[i][0]+1);
