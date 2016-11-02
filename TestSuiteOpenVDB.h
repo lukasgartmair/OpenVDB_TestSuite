@@ -82,6 +82,17 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test20 - find coord in vector ",
 				&TestOpenVDB::testOpenVDB_FindCoordInVector));
 
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test21 - signed distance field",
+				&TestOpenVDB::testOpenVDB_SignedDistanceField));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test22 - get active voxels mask",
+				&TestOpenVDB::testOpenVDB_ActiveVoxelsMask));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test23 - accessor test",
+				&TestOpenVDB::testOpenVDB_AccessorTest));
+
+
+
 
 		return suiteOfTests;
 	}
@@ -977,6 +988,8 @@ protected:
 		//initialize a (0,0,0) vector
 		std::vector<float> vector_to_search(xyzs);
 
+		vector_to_search[0] = 0;
+
 		bool vector_found = false;
 
 		if(std::find(active_voxel_indices.begin(), active_voxel_indices.end(), vector_to_search ) != active_voxel_indices.end()) 
@@ -993,6 +1006,101 @@ protected:
 		CPPUNIT_ASSERT_DOUBLES_EQUAL(true, vector_found,0.01);	
 
 	}
+
+	void testOpenVDB_SignedDistanceField()
+	{
+		// extract mesh
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
+		grid = createBlock(2,1);	
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec3I> triangles;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.5;
+		float adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
+
+		float in_bandwidth = 2;
+		float ex_bandwidth = 2;
+
+		// signed distance field
+		openvdb::FloatGrid::Ptr sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
+
+		int active_voxels_meshgrid = grid->activeVoxelCount();
+		int active_voxels_sdf = sdf->activeVoxelCount();
+
+		//std::cout << " active_voxels_meshgrid" << " = " << active_voxels_meshgrid << std::endl;
+		//std::cout << " active_voxels_sdf" << " = " << active_voxels_sdf << std::endl;
+
+		bool narrowband = false;
+		if (active_voxels_meshgrid < active_voxels_sdf)	
+		{
+			narrowband = true;
+		}
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(true, narrowband,0.01);
+	
+	}
+
+
+	void testOpenVDB_ActiveVoxelsMask()
+	{
+
+		// only available in 3.2.0 -> see releasenotes
+	}
+
+	void testOpenVDB_AccessorTest()
+	{
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
+		grid = createBlock(2,1);
+
+		// first set all active values to zero
+
+		for (openvdb::FloatGrid::ValueOnIter iter = grid->beginValueOn(); iter; ++iter)
+		{   
+    			iter.setValue(0.0);
+		}	
+		
+		// second step access the grid with an acceessor
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 };

@@ -5,6 +5,8 @@
 //#include <openvdb/math/Maps.cc>
 #include <openvdb/Grid.h>
 #include <openvdb/tools/VolumeToMesh.h>
+#include <openvdb/tools/MeshToVolume.h>
+#include <openvdb/tools/LevelSetUtil.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <openvdb/tools/Composite.h>
