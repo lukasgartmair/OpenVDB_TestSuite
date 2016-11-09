@@ -88,8 +88,8 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test22 - get active voxels mask",
 				&TestOpenVDB::testOpenVDB_ActiveVoxelsMask));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test23 - accessor test",
-				&TestOpenVDB::testOpenVDB_AccessorTest));
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test23 - sdf test",
+				&TestOpenVDB::testOpenVDB_SDFTest));
 
 
 
@@ -1049,19 +1049,127 @@ protected:
 		// only available in 3.2.0 -> see releasenotes
 	}
 
-	void testOpenVDB_AccessorTest()
+	void testOpenVDB_SDFTest()
 	{
-		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
-		grid = createBlock(2,1);
+		// extract mesh
+		openvdb::initialize();
 
-		// first set all active values to zero
+		// is the distance from sdf in voxel units or in real world units and
+		// is the higher resoltution really passed, when the mesh extracted from the lower
+		// resolution is passed in
+		// and third how is the distance calculated
 
-		for (openvdb::FloatGrid::ValueOnIter iter = grid->beginValueOn(); iter; ++iter)
-		{   
-    			iter.setValue(0.0);
-		}	
+		float initial_voxelsize = 1.0;		
+
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
+		grid = createBlock(3,1);
+
+		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
+
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec3I> triangles;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.5;
+		float adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
+
+		float voxelsize_levelset1 = 1.0;
+		float voxelsize_levelset2 = 0.5;
+
+		float in_bandwidth = 10;
+		float ex_bandwidth = 10;
+
+		openvdb::FloatGrid::Ptr sdf1 = openvdb::FloatGrid::create(0.0); 
+		openvdb::FloatGrid::Ptr sdf2 = openvdb::FloatGrid::create(0.0); 
+		sdf1->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset1));
+		sdf2->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset2));
+
+		// signed distance field
+		sdf1 = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
+		sdf2 = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
+
+		std::cout << " active_voxels_sdf 1 " << " = " << sdf1->activeVoxelCount() << std::endl;
+		std::cout << " active_voxels_sdf 2 " << " = " << sdf2->activeVoxelCount() << std::endl;
+
+		float minVal = 0.0;
+		float maxVal = 0.0;
+		sdf1->evalMinMax(minVal,maxVal);
+		std::cout << " eval min max sdf1" << " = " << minVal << " , " << maxVal << std::endl;
+		sdf2->evalMinMax(minVal,maxVal);
+		std::cout << " eval min max sdf2" << " = " << minVal << " , " << maxVal << std::endl;
+
+		// are the distances just in voxel units or is the transform not passed correctly ?!
+		// maybe try index world here
 		
-		// second step access the grid with an acceessor
+		openvdb::math::Transform::Ptr linearTransform1 =
+		    openvdb::math::Transform::createLinearTransform(voxelsize_levelset1);
+
+		openvdb::math::Transform::Ptr linearTransform2 =
+		    openvdb::math::Transform::createLinearTransform(voxelsize_levelset2);
+
+		openvdb::Coord ijk(6,6,6);
+		openvdb::Vec3d worldSpacePoint1 = linearTransform1->indexToWorld(ijk);
+		openvdb::Vec3d worldSpacePoint2 = linearTransform2->indexToWorld(ijk);
+
+		std::cout << " worldSpacePoint1 " << " = " << worldSpacePoint1 << std::endl;
+		std::cout << " worldSpacePoint2 " << " = " << worldSpacePoint2 << std::endl;
+		
+		// that's working as expected but what about the distances?
+		// how can i get a distance in world space		
+
+		// or do i just need to double the bandwidth when using e.g. half the initial voxel size for a higher resolution
+		// in order to get the same spatial information
+		// is the translation implied in the contribution function when the voxel size is passed ? 
+
+
+		// passing two different treansforms on sdf and check whether the distances are still the same or not
+		// the case i want to achieve with lower voxelsize in the sdf i want smaller discrete distance steps -
+		// not just more voxels with the same distance the big voxel would have
+
+/*
+
+
+		openvdb::FloatGrid::Ptr sdf_copy1 = sdf->deepCopy();
+		openvdb::FloatGrid::Ptr sdf_copy2 = sdf->deepCopy();
+		sdf_copy1->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset1));
+		sdf_copy2->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset2));
+
+		// how many active voxels does each grid have
+		// sdf2 should have finer resolution so more voxels		
+
+		bool finer_resolution = false;
+		if (sdf_copy1->activeVoxelCount() < sdf_copy2->activeVoxelCount())
+		{
+			finer_resolution = true;
+		}
+
+		std::cout << " active_voxels_sdf 1 " << " = " << sdf_copy1->activeVoxelCount() << std::endl;
+		std::cout << " active_voxels_sdf 2 " << " = " << sdf_copy2->activeVoxelCount() << std::endl;
+		CPPUNIT_ASSERT_EQUAL(true, finer_resolution);
+
+		// what about the values now?
+
+		openvdb::Coord hkl;
+
+		std::vector<float> values1;
+		std::vector<float> values2;
+		int counter = 0;
+		
+		openvdb::FloatGrid::Accessor sdf2_accessor = sdf_copy2->getAccessor();
+
+		for (openvdb::FloatGrid::ValueOnIter iter = sdf_copy1->beginValueOn(); iter; ++iter)
+		{
+			
+			hkl = iter.getCoord();
+			values1[counter] = iter.getValue();
+			values2[counter] = sdf2_accessor.getValue(hkl);
+		}
+
+		bool identical_values = false;
+
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(true, narrowband,0.01);
+*/
 
 	}
 
