@@ -1062,7 +1062,7 @@ protected:
 		float initial_voxelsize = 1.0;		
 
 		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
-		grid = createBlock(1,1);
+		grid = createBlock(3,1);
 
 		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
 
@@ -1070,15 +1070,15 @@ protected:
 		std::vector<openvdb::Vec3I> triangles;
 		std::vector<openvdb::Vec4I> quads;
 
-		float isovalue=0.5;
+		float isovalue=0.99;
 		float adaptivity=0;
 		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
 
 		float voxelsize_levelset1 = 1.0;
 		float voxelsize_levelset2 = 0.5;
 
-		float in_bandwidth = 60;
-		float ex_bandwidth = 60;
+		float in_bandwidth = 10;
+		float ex_bandwidth = 10;
 
 		openvdb::FloatGrid::Ptr sdf1 = openvdb::FloatGrid::create(0.0); 
 		openvdb::FloatGrid::Ptr sdf2 = openvdb::FloatGrid::create(0.0); 
@@ -1138,7 +1138,7 @@ protected:
 		std::cout << " sdf1 ijk " << " = " << sdf1_accessor.getValue(ijk) << std::endl;
 		std::cout << " sdf2 ijk " << " = " << sdf2_accessor.getValue(ijk) << std::endl;
 
-		openvdb::Coord hkl(5,5,5);
+		openvdb::Coord hkl(0,0,0);
 		std::cout << " sdf1 ijk " << " = " << sdf1_accessor.getValue(hkl) << std::endl;
 		std::cout << " sdf2 ijk " << " = " << sdf2_accessor.getValue(hkl) << std::endl;
 
