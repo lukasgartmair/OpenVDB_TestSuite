@@ -1062,7 +1062,7 @@ protected:
 		float initial_voxelsize = 1.0;		
 
 		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
-		grid = createBlock(3,1);
+		grid = createBlock(1,1);
 
 		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
 
@@ -1077,17 +1077,18 @@ protected:
 		float voxelsize_levelset1 = 1.0;
 		float voxelsize_levelset2 = 0.5;
 
-		float in_bandwidth = 10;
-		float ex_bandwidth = 10;
+		float in_bandwidth = 60;
+		float ex_bandwidth = 60;
 
 		openvdb::FloatGrid::Ptr sdf1 = openvdb::FloatGrid::create(0.0); 
 		openvdb::FloatGrid::Ptr sdf2 = openvdb::FloatGrid::create(0.0); 
-		sdf1->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset1));
-		sdf2->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset2));
 
 		// signed distance field
 		sdf1 = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
 		sdf2 = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
+
+		sdf1->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset1));
+		sdf2->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset2));
 
 		std::cout << " active_voxels_sdf 1 " << " = " << sdf1->activeVoxelCount() << std::endl;
 		std::cout << " active_voxels_sdf 2 " << " = " << sdf2->activeVoxelCount() << std::endl;
@@ -1127,49 +1128,32 @@ protected:
 		// the case i want to achieve with lower voxelsize in the sdf i want smaller discrete distance steps -
 		// not just more voxels with the same distance the big voxel would have
 
-/*
 
+		// now lets try what happens if the voxel distances in voxel units are converted to world space by 
+		// bringing the voxelsize in
 
-		openvdb::FloatGrid::Ptr sdf_copy1 = sdf->deepCopy();
-		openvdb::FloatGrid::Ptr sdf_copy2 = sdf->deepCopy();
-		sdf_copy1->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset1));
-		sdf_copy2->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset2));
+		// voxel distance of ijk and hkl
+		openvdb::FloatGrid::Accessor sdf2_accessor = sdf2->getAccessor();
+		openvdb::FloatGrid::Accessor sdf1_accessor = sdf1->getAccessor();
+		std::cout << " sdf1 ijk " << " = " << sdf1_accessor.getValue(ijk) << std::endl;
+		std::cout << " sdf2 ijk " << " = " << sdf2_accessor.getValue(ijk) << std::endl;
 
-		// how many active voxels does each grid have
-		// sdf2 should have finer resolution so more voxels		
+		openvdb::Coord hkl(5,5,5);
+		std::cout << " sdf1 ijk " << " = " << sdf1_accessor.getValue(hkl) << std::endl;
+		std::cout << " sdf2 ijk " << " = " << sdf2_accessor.getValue(hkl) << std::endl;
 
-		bool finer_resolution = false;
-		if (sdf_copy1->activeVoxelCount() < sdf_copy2->activeVoxelCount())
-		{
-			finer_resolution = true;
-		}
+		//real distance of ijk and hkl
+		// is multiplication with the voxelsize the right conversion?
+		// to my understanding a voxel (5,5,5) with distance 10 voxelunits and a size of one should have a distance of 
+		// 10 in the end. Whereas the voxel in the grid with the lower resolution (5,5,5) should have the same distance
+		// in voxel units of course but with a voxel size of only 0.5 i.e. the half of the first one the real distance should also
+		// be half the size of the first one. So 10 times 0.5 equals 5 and is half the distance of the first in real space?!
 
-		std::cout << " active_voxels_sdf 1 " << " = " << sdf_copy1->activeVoxelCount() << std::endl;
-		std::cout << " active_voxels_sdf 2 " << " = " << sdf_copy2->activeVoxelCount() << std::endl;
-		CPPUNIT_ASSERT_EQUAL(true, finer_resolution);
+		std::cout << " sdf1 ijk real" << " = " << sdf1_accessor.getValue(ijk) * voxelsize_levelset1 << std::endl;
+		std::cout << " sdf2 ijk real " << " = " << sdf2_accessor.getValue(ijk) * voxelsize_levelset2 << std::endl;
 
-		// what about the values now?
-
-		openvdb::Coord hkl;
-
-		std::vector<float> values1;
-		std::vector<float> values2;
-		int counter = 0;
-		
-		openvdb::FloatGrid::Accessor sdf2_accessor = sdf_copy2->getAccessor();
-
-		for (openvdb::FloatGrid::ValueOnIter iter = sdf_copy1->beginValueOn(); iter; ++iter)
-		{
-			
-			hkl = iter.getCoord();
-			values1[counter] = iter.getValue();
-			values2[counter] = sdf2_accessor.getValue(hkl);
-		}
-
-		bool identical_values = false;
-
-		CPPUNIT_ASSERT_DOUBLES_EQUAL(true, narrowband,0.01);
-*/
+		std::cout << " sdf1 ijk real " << " = " << sdf1_accessor.getValue(hkl) * voxelsize_levelset1 << std::endl;
+		std::cout << " sdf2 ijk real " << " = " << sdf2_accessor.getValue(hkl) * voxelsize_levelset2 << std::endl;
 
 	}
 
