@@ -421,7 +421,7 @@ void ExportVDBMeshAsObj(std::vector<openvdb::Vec3s> points, std::vector<openvdb:
 void ExportMeshAsVDB(openvdb::FloatGrid::Ptr grid)
 {
 
-	openvdb::io::File file("isosurface_mesh.vdb");
+	openvdb::io::File file("grid.vdb");
 	openvdb::GridPtrVec grids;
 	grids.push_back(grid);
 

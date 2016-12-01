@@ -91,6 +91,8 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test23 - sdf test",
 				&TestOpenVDB::testOpenVDB_SDFTest));
 
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test24 - narrow band test",
+				&TestOpenVDB::testOpenVDB_Narrowband));
 
 
 
@@ -1059,7 +1061,7 @@ protected:
 		// resolution is passed in
 		// and third how is the distance calculated
 
-		float initial_voxelsize = 1.0;		
+		float initial_voxelsize = 2.0;		
 
 		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
 		grid = createBlock(3,1);
@@ -1152,13 +1154,95 @@ protected:
 		std::cout << " sdf1 ijk real" << " = " << sdf1_accessor.getValue(ijk) * voxelsize_levelset1 << std::endl;
 		std::cout << " sdf2 ijk real " << " = " << sdf2_accessor.getValue(ijk) * voxelsize_levelset2 << std::endl;
 
-		std::cout << " sdf1 ijk real " << " = " << sdf1_accessor.getValue(hkl) * voxelsize_levelset1 << std::endl;
-		std::cout << " sdf2 ijk real " << " = " << sdf2_accessor.getValue(hkl) * voxelsize_levelset2 << std::endl;
+		std::cout << " sdf1 hkl real " << " = " << sdf1_accessor.getValue(hkl) * voxelsize_levelset1 << std::endl;
+		std::cout << " sdf2 hkl real " << " = " << sdf2_accessor.getValue(hkl) * voxelsize_levelset2 << std::endl;
+		
+		openvdb::Coord lmk(5,5,5);
+
+		std::cout << " sdf1 lmk real " << " = " << sdf1_accessor.getValue(lmk) * voxelsize_levelset1 << std::endl;
+		std::cout << " sdf2 lmk real " << " = " << sdf2_accessor.getValue(lmk) * voxelsize_levelset2 << std::endl;
 
 	}
 
 
 
+	void testOpenVDB_Narrowband()
+	{
+		
+	// issue 19 Does the high resolution voxelization in the narrowband work as expected #19
+	// that is are the voxels created near the surface with a finer resolution?
+	// the results of the proxigram reveal that here may be some discrepancies
+
+	// what is a proper test case for this?!
+	
+	openvdb::initialize();
+	float initial_voxelsize = 2.0;		
+
+	openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
+	grid = createBlock(15,1);
+
+	grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
+
+	std::vector<openvdb::Vec3s> points;
+	std::vector<openvdb::Vec3I> triangles;
+	std::vector<openvdb::Vec4I> quads;
+
+	float isovalue=0.99;
+	float adaptivity=0;
+	openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
+	
+
+	float voxelsize_levelset = 0.2;
+
+	float in_bandwidth = 2;
+	float ex_bandwidth = 5;
+
+	openvdb::FloatGrid::Ptr sdf = openvdb::FloatGrid::create(0.0); 
+
+	// signed distance field
+	sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
+
+	sdf->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset));
+
+	float minVal = 0.0;
+	float maxVal = 0.0;
+	sdf->evalMinMax(minVal,maxVal);
+	std::cout << " eval min max sdf1" << " = " << minVal << " , " << maxVal << std::endl;
+
+	// get the distance statistics 
+	// that is are the shells growing to the outside as expected
+	std::vector<float> distances = {-1.5,-0.03,0,1,2,3,4,5,6};
+	std::vector<float> number_of_voxels(distances.size()-1);
+
+	for(int i=0;i<distances.size();i++)
+	{
+		int voxel_counter = 0;
+		for (openvdb::FloatGrid::ValueOnIter iter = sdf->beginValueOn(); iter; ++iter)
+		{   
+			if (i<distances.size())
+			{
+				if ((distances[i+1] > iter.getValue()) && (iter.getValue() >= distances[i]))
+				{	
+					voxel_counter += 1;
+					
+				}
+			}	
+			number_of_voxels[i] =  voxel_counter;	
+		}	
+	}
+
+	for(int i=0;i<number_of_voxels.size();i++)
+	{
+		if (i<distances.size())
+		{
+			std::cout << " number_of_voxels in distance " <<  distances[i] << " to " << distances[i+1] << " = " << number_of_voxels[i] << std::endl;
+		}	
+	}
+
+	// at first just export it and view it with vdb_viewer if there is a narrowband levelset
+	//ExportMeshAsVDB(sdf);
+	
+	}
 
 
 
