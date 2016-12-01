@@ -97,6 +97,15 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test25 - shell assignment test",
 				&TestOpenVDB::testOpenVDB_ShellAssignment));
 
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test26 - shell assignment test 2",
+				&TestOpenVDB::testOpenVDB_ShellAssignment2));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test27 - std::map creation",
+				&TestOpenVDB::testOpenVDB_StdMap));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test28 - sort",
+				&TestOpenVDB::testOpenVDB_Sort));
+
 
 		return suiteOfTests;
 	}
@@ -1358,19 +1367,144 @@ protected:
 
 	}
 
+	void testOpenVDB_ShellAssignment2()
+	{
+
+		struct myclass {
+		  bool operator() (int i,int j) { return (i<j);}
+		} myobject;
+		// the question here is whether the shells of the proxigram are 
+		// assigned correctly
+
+		openvdb::initialize();
+		float initial_voxelsize = 2.0;		
+
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
+		grid = createBlock(15,1);
+
+		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
+
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec3I> triangles;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.99;
+		float adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
+	
+
+		float voxelsize_levelset = 0.2;
+
+		float in_bandwidth = 2;
+		float ex_bandwidth = 5;
+
+		openvdb::FloatGrid::Ptr sdf = openvdb::FloatGrid::create(0.0); 
+
+		// signed distance field
+		sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
+
+		sdf->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset));
+		
+		float minVal = 0.0;
+		float maxVal = 0.0;
+		sdf->evalMinMax(minVal,maxVal);
+		std::cout << " eval min max sdf" << " = " << minVal << " , " << maxVal << std::endl;
+		std::cout << " active voxel count sdf" << " = " << sdf->activeVoxelCount() << std::endl;
+		// in this test the calculations are in voxel units for simplicity
+		// and independency of conversion failures
+		//std::vector<float> proximity_ranges = {-1.5,-0.03,0,1,2,3,4,5,6};
+
+		// this sequence of shells is known to produce uneven shell contents
+		// the half steps has lot lower content
+		// e.g. 0.5 to 1 = 20886 and 1 to 1.5 = 708
+		std::vector<float> proximity_ranges = {-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
+		std::vector<float> number_of_voxels(proximity_ranges.size()-1);
+
+		// initialize dynamic vectors without knowing the initial size
+		std::vector<float> all_distances;
+		std::vector<float> different_distances;
+
+		for(int i=0;i<proximity_ranges.size();i++)
+		{
+			int voxel_counter = 0;
+			for (openvdb::FloatGrid::ValueOnIter iter = sdf->beginValueOn(); iter; ++iter)
+			{   
+				if (i<proximity_ranges.size())
+				{
+					if ((iter.getValue() < proximity_ranges[i+1]) && (iter.getValue() >= proximity_ranges[i]))
+					{
+						voxel_counter += 1;
+					}
+				}		
+				number_of_voxels[i] =  voxel_counter;	
+			}
+		}
+
+		for (openvdb::FloatGrid::ValueOnIter iter = sdf->beginValueOn(); iter; ++iter)
+		{   
+			all_distances.push_back(iter.getValue());
+			if(std::find(different_distances.begin(), different_distances.end(), iter.getValue()) != different_distances.end()) 
+			{
+			    // v contains x 
+			} else {
+			    // v does not contain x 
+				different_distances.push_back(iter.getValue());
+			}
 
 
+		}
+
+/*
+		for(int i=0;i<number_of_voxels.size();i++)
+		{
+			if (i<proximity_ranges.size())
+			{
+				std::cout << " number_of_voxels in distance " <<  proximity_ranges[i] << " to " << proximity_ranges[i+1] << " = " << number_of_voxels[i] << std::endl;
+			}	
+		}
+/*
+		for(int i=0;i<different_distances.size();++i)
+		{
+				//std::cout << "unique distance = " <<  different_sizes[i] << std::endl;
+				std::cout << different_distances[i] << ", " << std::endl;
+		}
+
+/*
+		FILE* f = fopen("all_sizes.txt","wt");
+
+		for(int i=0;i<all_distances.size();i++) fprintf(f, "%lf \n", all_distances[i]);
+
+		fclose(f);
+*/
+
+	}
+
+	void testOpenVDB_StdMap()
+	{
+		std::map<float, int> indicesMap;
+		int increaser = 10;
+		for (int i=0;i<3;i++)
+		{
+			indicesMap.insert(std::make_pair(increaser, i));
+			increaser += 10;
+		}
+
+		int assert_key = 2;
+		int ask_for_key = indicesMap[30];
+		
+
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_key,ask_for_key,0.01);
+	}
 
 
+	void testOpenVDB_Sort()
+	{
+		std::vector<int> vec = {3,1,2};
 
+		std::sort(vec.begin(), vec.end());
 
-
-
-
-
-
-
-
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(1,vec[0],0.01);
+	}
 
 
 
