@@ -106,6 +106,9 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test28 - sort",
 				&TestOpenVDB::testOpenVDB_Sort));
 
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test29 - shell assignement",
+				&TestOpenVDB::testOpenVDB_ShellAnalysis));
+
 
 		return suiteOfTests;
 	}
@@ -1507,10 +1510,40 @@ protected:
 	}
 
 
+	void testOpenVDB_ShellAnalysis()
+	{
+		std::vector<float> unique_distances = {-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
+		std::vector<float> voxel_content = {1,1,1,100,100,100,100,100,10,10,10,10,10,10};
 
+		// does the summarization of the shells work as expected?
 
+		int number_of_proximity_ranges = 3;
 
+		std::vector<float> proximity_ranges_ends = {-0.5, 2, 5};
 
+		std::vector<float> shell_content(number_of_proximity_ranges);
+
+		int proximity_range_index = 0;
+		for (int i=0;i<unique_distances.size();i++)
+		{
+			if (proximity_range_index < number_of_proximity_ranges)
+			{
+				if (unique_distances[i] > proximity_ranges_ends[proximity_range_index])
+				{
+					proximity_range_index += 1;				
+				}
+		
+				shell_content[proximity_range_index] += voxel_content[i];	
+
+			}	
+		}
+
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(3,shell_content[0],0.01);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(500,shell_content[1],0.01);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(60,shell_content[2],0.01);
+
+		// seems to work as expected
+	}
 
 
 
