@@ -19,6 +19,7 @@ public:
 	static CppUnit::Test *suite() {
 		CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite("TestOpenVDB");
  
+/*
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test0 - Test the Test itsself",
 				&TestOpenVDB::testOpenVDB_TestTheTest ));
 				
@@ -109,6 +110,14 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test29 - shell assignement",
 				&TestOpenVDB::testOpenVDB_ShellAnalysis));
 
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test30 - sdf reference change ",
+				&TestOpenVDB::testOpenVDB_SdfReferenceChange));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test31 - whole ReferenceCycle of the prxoigram filter ",
+				&TestOpenVDB::testOpenVDB_ReferenceCycle));
+*/
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test32 - rearrange the proximitiy ranges",
+				&TestOpenVDB::testOpenVDB_RearrangeProximities));
 
 		return suiteOfTests;
 	}
@@ -1545,9 +1554,185 @@ protected:
 		// seems to work as expected
 	}
 
+	void testOpenVDB_SdfReferenceChange()
+	{
+		// why are concentrations messed up and the distances reversed when choosing small voxel sizes
+		// checking whether the sdf is the problem
+
+		openvdb::initialize();
+		float initial_voxelsize = 2.0;		
+
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
+		grid = createBlock(15,1);
+
+		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
+
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec3I> triangles;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.5;
+		float adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
+
+		float in_bandwidth = 2;
+		float ex_bandwidth = 5;
+
+		std::vector<float> voxel_sizes = {0.05,0.1,1,2,3,4,5};
+
+		std::vector<float> bounding_boxes;
+
+		for (int i=0;i<voxel_sizes.size();i++)
+		{			
+			openvdb::FloatGrid::Ptr sdf = openvdb::FloatGrid::create(0.0); 
+
+			// signed distance field
+			sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
+			sdf->setTransform(openvdb::math::Transform::createLinearTransform(voxel_sizes[i]));		
+
+			float minVal = 0.0;
+			float maxVal = 0.0;
+			sdf->evalMinMax(minVal,maxVal);
+			std::cout << " eval min max sdf" << " = " << minVal << " , " << maxVal << std::endl;
+			std::cout << " active voxel count sdf" << " = " << sdf->activeVoxelCount() << std::endl;
+
+			openvdb::math::CoordBBox bounding_box = sdf->evalActiveVoxelBoundingBox();
+			std::cout << " sdf " << " = " << bounding_box << std::endl;
+			
+			bounding_boxes.push_back(bounding_box);
+		}
+
+		for (int i=0;i<bounding_boxes.size();i++)
+		{
+			if (i>0)
+			{
+				CPPUNIT_ASSERT_DOUBLES_EQUAL(bounding_boxes[i-1],bounding_boxes[i],0.01);	
+			}
+		}
+
+		// all sdfs originate from the same initial voxelsize isosurface
+		// all sdfs do have the same amount of voxels and the same bounding boxes
+
+	}
+
+	void testOpenVDB_ReferenceCycle()
+	{
+
+		openvdb::initialize();
+		float initial_voxelsize = 2.0;		
+
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
+		grid = createBlock(15,1);
+
+		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
+
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec3I> triangles;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.5;
+		float adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
+
+		std::vector<float> voxel_sizes = {0.05,0.1,1,2,3,4,5};
+
+		std::vector<float> bounding_boxes;
+
+		float active_voxel_state_value = 1.0;
+		float ion_value = 5;
+
+		for (int i=0;i<voxel_sizes.size();i++)
+		{			
+
+			float max_distance = 2; // nm
+			float min_distance = -2; // nm
+
+			// mesh to signed distance takes floats as input
+			float in_bandwidth = abs(min_distance) / voxel_sizes[i];
+			float ex_bandwidth = max_distance / voxel_sizes[i];
+
+			std::cout << " in_bandwidth " << " = " << in_bandwidth << std::endl;
+			std::cout << " ex_bandwidth " << " = " << ex_bandwidth << std::endl;
+			openvdb::FloatGrid::Ptr sdf = openvdb::FloatGrid::create(0.0); 
+
+			// signed distance field
+			sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
+			sdf->setTransform(openvdb::math::Transform::createLinearTransform(voxel_sizes[i]));	
+
+			openvdb::FloatGrid::Ptr ion_grid = sdf->deepCopy();
+			openvdb::FloatGrid::Ptr voxelstate_grid = sdf->deepCopy();
+
+			ion_grid->setTransform(openvdb::math::Transform::createLinearTransform(voxel_sizes[i]));
+			voxelstate_grid->setTransform(openvdb::math::Transform::createLinearTransform(voxel_sizes[i]));
 
 
+			for (openvdb::FloatGrid::ValueOnIter iter = ion_grid->beginValueOn(); iter; ++iter)
+			{   
+					iter.setValue(0.0);
+			}
 
+			for (openvdb::FloatGrid::ValueOnIter iter = voxelstate_grid->beginValueOn(); iter; ++iter)
+			{   
+					iter.setValue(active_voxel_state_value);
+			}
+
+
+			float minVal = 0.0;
+			float maxVal = 0.0;
+			sdf->evalMinMax(minVal,maxVal);
+			openvdb::math::CoordBBox bounding_box = sdf->evalActiveVoxelBoundingBox();
+			std::cout << " sdf " << " = " << bounding_box << std::endl;
+
+			for (openvdb::FloatGrid::ValueOnIter iter = sdf->beginValueOn(); iter; ++iter)
+			{   
+					iter.setValue(iter.getValue() * voxel_sizes[i]);
+			}
+
+			minVal = 0.0;
+			maxVal = 0.0;
+			sdf->evalMinMax(minVal,maxVal);
+			bounding_box = sdf->evalActiveVoxelBoundingBox();
+			std::cout << " sdf " << " = " << bounding_box << std::endl;
+
+		}
+
+	}
+
+	void testOpenVDB_RearrangeProximities()
+	{
+		
+		int number_of_proximity_ranges = 5;
+		float shell_width = 0.5;
+
+		std::vector<float> proximity_ranges_ends = {-1,-0.5,0,0.5,1};
+
+		std::vector<float> proximity_ranges_plotting(number_of_proximity_ranges);
+
+		for (int i=0;i<proximity_ranges_plotting.size();i++)
+		{
+			if (proximity_ranges_ends[i] <= 0)
+			{
+				proximity_ranges_plotting[i] = proximity_ranges_ends[i] - shell_width;
+			}			
+			else
+			{
+				proximity_ranges_plotting[i] = proximity_ranges_ends[i];		
+			}			
+		}		
+
+		for (int i=0;i<proximity_ranges_plotting.size();i++)
+		{		
+			std::cout << " proximity_ranges_plotting [i] " << " = " << proximity_ranges_plotting[i] << std::endl;	
+		}
+
+		std::vector<float> assert_ranges_ends = {-1.5,-1,-0.5,0.5,1};
+
+		for (int i=0;i<proximity_ranges_plotting.size();i++)
+		{		
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_ranges_ends[i], proximity_ranges_plotting[i], 0.01);	
+		}
+
+	}
 
 
 
