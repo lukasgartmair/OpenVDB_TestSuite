@@ -110,6 +110,10 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test34 - set proximity ranges",
 				&TestOpenVDB::testOpenVDB_SetProximityRanges));
 
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test35 - new shell check",
+				&TestOpenVDB::testOpenVDB_ShellCheck));
+
+
 		return suiteOfTests;
 	}
  
@@ -1262,5 +1266,42 @@ protected:
 
 
 
+	void testOpenVDB_ShellCheck()
+	{ 
+
+		
+		std::vector<float> proximity_ranges_limits = {-2.5,-1.5,-0.5,0.5,1.5,2.5};
+		std::vector<float> assert_ranges_centers = {-2,-1,0,1,2};
+		std::vector<float> shell_content(assert_ranges_centers.size());
+
+		std::vector<float> unique_distances = {-4,-2.3,-2.0,-1.4,-1.1,-0.3,0.2,1.1,1.4,2.1,2.3,3.0};
+		std::vector<float> voxel_content;
+		for (int i=0;i<unique_distances.size();i++)
+		{
+			voxel_content.push_back(1);
+		}
+
+		int proximity_range_index = 0;
+		for (int i=0;i<unique_distances.size();i++)
+		{
+			if ((unique_distances[i] >= proximity_ranges_limits[proximity_range_index]))
+			{
+
+				if (unique_distances[i] > proximity_ranges_limits[proximity_range_index+1])
+				{
+					proximity_range_index += 1;				
+				}
+				shell_content[proximity_range_index] += voxel_content[i];	
+
+			}	
+		}
+		for (int i=0;i<shell_content.size();i++)
+		{
+			std::cout << " shell_content [i] " << " = " << shell_content[i] << std::endl;
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(2,shell_content[i],0.01);
+		}
+
+
+	}
 
 };
