@@ -86,38 +86,29 @@ public:
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test21 - signed distance field",
 				&TestOpenVDB::testOpenVDB_SignedDistanceField));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test22 - get active voxels mask",
-				&TestOpenVDB::testOpenVDB_ActiveVoxelsMask));
-
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test23 - sdf test",
-				&TestOpenVDB::testOpenVDB_SDFTest));
-
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test24 - narrow band test",
-				&TestOpenVDB::testOpenVDB_Narrowband));
-
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test25 - shell assignment test",
-				&TestOpenVDB::testOpenVDB_ShellAssignment));
-
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test26 - shell assignment test 2",
-				&TestOpenVDB::testOpenVDB_ShellAssignment2));
-
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test27 - std::map creation",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test22 - std::map creation",
 				&TestOpenVDB::testOpenVDB_StdMap));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test28 - sort",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test23 - sort",
 				&TestOpenVDB::testOpenVDB_Sort));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test29 - shell assignement",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test24 - shell assignement",
 				&TestOpenVDB::testOpenVDB_ShellAnalysis));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test30 - sdf reference change ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test25 - sdf reference change ",
 				&TestOpenVDB::testOpenVDB_SdfReferenceChange));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test31 - whole ReferenceCycle of the prxoigram filter ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test26 - whole ReferenceCycle of the prxoigram filter ",
 				&TestOpenVDB::testOpenVDB_ReferenceCycle));
 */
 		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test32 - rearrange the proximitiy ranges",
 				&TestOpenVDB::testOpenVDB_RearrangeProximities));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test33 - voxel intersections",
+				&TestOpenVDB::testOpenVDB_VoxelIntersections));
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test34 - set proximity ranges",
+				&TestOpenVDB::testOpenVDB_SetProximityRanges));
 
 		return suiteOfTests;
 	}
@@ -1049,8 +1040,12 @@ protected:
 		float in_bandwidth = 2;
 		float ex_bandwidth = 2;
 
+		float voxelsize_levelset = 0.5;
+
+		// this is the right way to call the sdf !!!
 		// signed distance field
-		openvdb::FloatGrid::Ptr sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
+		openvdb::math::Transform::Ptr trans = openvdb::math::Transform::createLinearTransform(voxelsize_levelset);
+		openvdb::FloatGrid::Ptr sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(*trans, points, triangles, quads, ex_bandwidth, in_bandwidth);
 
 		int active_voxels_meshgrid = grid->activeVoxelCount();
 		int active_voxels_sdf = sdf->activeVoxelCount();
@@ -1065,430 +1060,6 @@ protected:
 		}
 		CPPUNIT_ASSERT_DOUBLES_EQUAL(true, narrowband,0.01);
 	
-	}
-
-
-	void testOpenVDB_ActiveVoxelsMask()
-	{
-
-		// only available in 3.2.0 -> see releasenotes
-	}
-
-	void testOpenVDB_SDFTest()
-	{
-		// extract mesh
-		openvdb::initialize();
-
-		// is the distance from sdf in voxel units or in real world units and
-		// is the higher resoltution really passed, when the mesh extracted from the lower
-		// resolution is passed in
-		// and third how is the distance calculated
-
-		float initial_voxelsize = 2.0;		
-
-		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
-		grid = createBlock(3,1);
-
-		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
-
-		std::vector<openvdb::Vec3s> points;
-		std::vector<openvdb::Vec3I> triangles;
-		std::vector<openvdb::Vec4I> quads;
-
-		float isovalue=0.99;
-		float adaptivity=0;
-		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
-
-		float voxelsize_levelset1 = 1.0;
-		float voxelsize_levelset2 = 0.5;
-
-		float in_bandwidth = 10;
-		float ex_bandwidth = 10;
-
-		openvdb::FloatGrid::Ptr sdf1 = openvdb::FloatGrid::create(0.0); 
-		openvdb::FloatGrid::Ptr sdf2 = openvdb::FloatGrid::create(0.0); 
-
-		// signed distance field
-		sdf1 = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
-		sdf2 = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
-
-		sdf1->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset1));
-		sdf2->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset2));
-
-		std::cout << " active_voxels_sdf 1 " << " = " << sdf1->activeVoxelCount() << std::endl;
-		std::cout << " active_voxels_sdf 2 " << " = " << sdf2->activeVoxelCount() << std::endl;
-
-		float minVal = 0.0;
-		float maxVal = 0.0;
-		sdf1->evalMinMax(minVal,maxVal);
-		std::cout << " eval min max sdf1" << " = " << minVal << " , " << maxVal << std::endl;
-		sdf2->evalMinMax(minVal,maxVal);
-		std::cout << " eval min max sdf2" << " = " << minVal << " , " << maxVal << std::endl;
-
-		// are the distances just in voxel units or is the transform not passed correctly ?!
-		// maybe try index world here
-		
-		openvdb::math::Transform::Ptr linearTransform1 =
-		    openvdb::math::Transform::createLinearTransform(voxelsize_levelset1);
-
-		openvdb::math::Transform::Ptr linearTransform2 =
-		    openvdb::math::Transform::createLinearTransform(voxelsize_levelset2);
-
-		openvdb::Coord ijk(6,6,6);
-		openvdb::Vec3d worldSpacePoint1 = linearTransform1->indexToWorld(ijk);
-		openvdb::Vec3d worldSpacePoint2 = linearTransform2->indexToWorld(ijk);
-
-		std::cout << " worldSpacePoint1 " << " = " << worldSpacePoint1 << std::endl;
-		std::cout << " worldSpacePoint2 " << " = " << worldSpacePoint2 << std::endl;
-		
-		// that's working as expected but what about the distances?
-		// how can i get a distance in world space		
-
-		// or do i just need to double the bandwidth when using e.g. half the initial voxel size for a higher resolution
-		// in order to get the same spatial information
-		// is the translation implied in the contribution function when the voxel size is passed ? 
-
-
-		// passing two different treansforms on sdf and check whether the distances are still the same or not
-		// the case i want to achieve with lower voxelsize in the sdf i want smaller discrete distance steps -
-		// not just more voxels with the same distance the big voxel would have
-
-
-		// now lets try what happens if the voxel distances in voxel units are converted to world space by 
-		// bringing the voxelsize in
-
-		// voxel distance of ijk and hkl
-		openvdb::FloatGrid::Accessor sdf2_accessor = sdf2->getAccessor();
-		openvdb::FloatGrid::Accessor sdf1_accessor = sdf1->getAccessor();
-		std::cout << " sdf1 ijk " << " = " << sdf1_accessor.getValue(ijk) << std::endl;
-		std::cout << " sdf2 ijk " << " = " << sdf2_accessor.getValue(ijk) << std::endl;
-
-		openvdb::Coord hkl(0,0,0);
-		std::cout << " sdf1 ijk " << " = " << sdf1_accessor.getValue(hkl) << std::endl;
-		std::cout << " sdf2 ijk " << " = " << sdf2_accessor.getValue(hkl) << std::endl;
-
-		//real distance of ijk and hkl
-		// is multiplication with the voxelsize the right conversion?
-		// to my understanding a voxel (5,5,5) with distance 10 voxelunits and a size of one should have a distance of 
-		// 10 in the end. Whereas the voxel in the grid with the lower resolution (5,5,5) should have the same distance
-		// in voxel units of course but with a voxel size of only 0.5 i.e. the half of the first one the real distance should also
-		// be half the size of the first one. So 10 times 0.5 equals 5 and is half the distance of the first in real space?!
-
-		std::cout << " sdf1 ijk real" << " = " << sdf1_accessor.getValue(ijk) * voxelsize_levelset1 << std::endl;
-		std::cout << " sdf2 ijk real " << " = " << sdf2_accessor.getValue(ijk) * voxelsize_levelset2 << std::endl;
-
-		std::cout << " sdf1 hkl real " << " = " << sdf1_accessor.getValue(hkl) * voxelsize_levelset1 << std::endl;
-		std::cout << " sdf2 hkl real " << " = " << sdf2_accessor.getValue(hkl) * voxelsize_levelset2 << std::endl;
-		
-		openvdb::Coord lmk(5,5,5);
-
-		std::cout << " sdf1 lmk real " << " = " << sdf1_accessor.getValue(lmk) * voxelsize_levelset1 << std::endl;
-		std::cout << " sdf2 lmk real " << " = " << sdf2_accessor.getValue(lmk) * voxelsize_levelset2 << std::endl;
-
-	}
-
-
-
-	void testOpenVDB_Narrowband()
-	{
-		
-		// issue 19 Does the high resolution voxelization in the narrowband work as expected #19
-		// that is are the voxels created near the surface with a finer resolution?
-		// the results of the proxigram reveal that here may be some discrepancies
-
-		// what is a proper test case for this?!
-	
-		openvdb::initialize();
-		float initial_voxelsize = 2.0;		
-
-		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
-		grid = createBlock(15,1);
-
-		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
-
-		std::vector<openvdb::Vec3s> points;
-		std::vector<openvdb::Vec3I> triangles;
-		std::vector<openvdb::Vec4I> quads;
-
-		float isovalue=0.99;
-		float adaptivity=0;
-		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
-	
-
-		float voxelsize_levelset = 0.2;
-
-		float in_bandwidth = 2;
-		float ex_bandwidth = 5;
-
-		openvdb::FloatGrid::Ptr sdf = openvdb::FloatGrid::create(0.0); 
-
-		// signed distance field
-		sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
-
-		sdf->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset));
-
-		float minVal = 0.0;
-		float maxVal = 0.0;
-		sdf->evalMinMax(minVal,maxVal);
-		std::cout << " eval min max sdf1" << " = " << minVal << " , " << maxVal << std::endl;
-
-		// get the distance statistics 
-		// that is are the shells growing to the outside as expected
-		std::vector<float> distances = {-1.5,-0.03,0,1,2,3,4,5,6};
-		std::vector<float> number_of_voxels(distances.size()-1);
-
-		for(int i=0;i<distances.size();i++)
-		{
-			int voxel_counter = 0;
-			for (openvdb::FloatGrid::ValueOnIter iter = sdf->beginValueOn(); iter; ++iter)
-			{   
-				if (i<distances.size())
-				{
-					if ((distances[i+1] > iter.getValue()) && (iter.getValue() >= distances[i]))
-					{	
-						voxel_counter += 1;
-					
-					}
-				}	
-				number_of_voxels[i] =  voxel_counter;	
-			}	
-		}
-
-		for(int i=0;i<number_of_voxels.size();i++)
-		{
-			if (i<distances.size())
-			{
-				std::cout << " number_of_voxels in distance " <<  distances[i] << " to " << distances[i+1] << " = " << number_of_voxels[i] << std::endl;
-			}	
-		}
-
-		// at first just export it and view it with vdb_viewer if there is a narrowband levelset
-		//ExportMeshAsVDB(sdf);
-	
-	}
-
-	void testOpenVDB_ShellAssignment()
-	{
-
-		struct myclass {
-		  bool operator() (int i,int j) { return (i<j);}
-		} myobject;
-		// the question here is whether the shells of the proxigram are 
-		// assigned correctly
-
-		openvdb::initialize();
-		float initial_voxelsize = 2.0;		
-
-		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
-		grid = createBlock(15,1);
-
-		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
-
-		std::vector<openvdb::Vec3s> points;
-		std::vector<openvdb::Vec3I> triangles;
-		std::vector<openvdb::Vec4I> quads;
-
-		float isovalue=0.99;
-		float adaptivity=0;
-		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
-	
-
-		float voxelsize_levelset = 0.2;
-
-		float in_bandwidth = 2;
-		float ex_bandwidth = 5;
-
-		openvdb::FloatGrid::Ptr sdf = openvdb::FloatGrid::create(0.0); 
-
-		// signed distance field
-		sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
-
-		sdf->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset));
-		
-		float minVal = 0.0;
-		float maxVal = 0.0;
-		sdf->evalMinMax(minVal,maxVal);
-		std::cout << " eval min max sdf" << " = " << minVal << " , " << maxVal << std::endl;
-		std::cout << " active voxel count sdf" << " = " << sdf->activeVoxelCount() << std::endl;
-		// in this test the calculations are in voxel units for simplicity
-		// and independency of conversion failures
-		//std::vector<float> proximity_ranges = {-1.5,-0.03,0,1,2,3,4,5,6};
-
-		// this sequence of shells is known to produce uneven shell contents
-		// the half steps has lot lower content
-		// e.g. 0.5 to 1 = 20886 and 1 to 1.5 = 708
-		std::vector<float> proximity_ranges = {-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
-		std::vector<float> number_of_voxels(proximity_ranges.size()-1);
-
-		// initialize dynamic vectors without knowing the initial size
-		std::vector<float> all_distances;
-		std::vector<float> different_distances;
-
-		for(int i=0;i<proximity_ranges.size();i++)
-		{
-			int voxel_counter = 0;
-			for (openvdb::FloatGrid::ValueOnIter iter = sdf->beginValueOn(); iter; ++iter)
-			{   
-				if (i<proximity_ranges.size())
-				{
-					if ((iter.getValue() < proximity_ranges[i+1]) && (iter.getValue() >= proximity_ranges[i]))
-					{
-						voxel_counter += 1;
-					}
-				}		
-				number_of_voxels[i] =  voxel_counter;	
-			}
-		}
-
-		for (openvdb::FloatGrid::ValueOnIter iter = sdf->beginValueOn(); iter; ++iter)
-		{   
-			all_distances.push_back(iter.getValue());
-			if(std::find(different_distances.begin(), different_distances.end(), iter.getValue()) != different_distances.end()) 
-			{
-			    // v contains x 
-			} else {
-			    // v does not contain x 
-				different_distances.push_back(iter.getValue());
-			}
-
-
-		}
-
-
-		for(int i=0;i<number_of_voxels.size();i++)
-		{
-			if (i<proximity_ranges.size())
-			{
-				std::cout << " number_of_voxels in distance " <<  proximity_ranges[i] << " to " << proximity_ranges[i+1] << " = " << number_of_voxels[i] << std::endl;
-			}	
-		}
-/*
-		for(int i=0;i<different_distances.size();++i)
-		{
-				//std::cout << "unique distance = " <<  different_sizes[i] << std::endl;
-				std::cout << different_distances[i] << ", " << std::endl;
-		}
-*/
-
-		FILE* f = fopen("all_sizes.txt","wt");
-
-		for(int i=0;i<all_distances.size();i++) fprintf(f, "%lf \n", all_distances[i]);
-
-		fclose(f);
-
-
-	}
-
-	void testOpenVDB_ShellAssignment2()
-	{
-
-		struct myclass {
-		  bool operator() (int i,int j) { return (i<j);}
-		} myobject;
-		// the question here is whether the shells of the proxigram are 
-		// assigned correctly
-
-		openvdb::initialize();
-		float initial_voxelsize = 2.0;		
-
-		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
-		grid = createBlock(15,1);
-
-		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
-
-		std::vector<openvdb::Vec3s> points;
-		std::vector<openvdb::Vec3I> triangles;
-		std::vector<openvdb::Vec4I> quads;
-
-		float isovalue=0.99;
-		float adaptivity=0;
-		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
-	
-
-		float voxelsize_levelset = 0.2;
-
-		float in_bandwidth = 2;
-		float ex_bandwidth = 5;
-
-		openvdb::FloatGrid::Ptr sdf = openvdb::FloatGrid::create(0.0); 
-
-		// signed distance field
-		sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
-
-		sdf->setTransform(openvdb::math::Transform::createLinearTransform(voxelsize_levelset));
-		
-		float minVal = 0.0;
-		float maxVal = 0.0;
-		sdf->evalMinMax(minVal,maxVal);
-		std::cout << " eval min max sdf" << " = " << minVal << " , " << maxVal << std::endl;
-		std::cout << " active voxel count sdf" << " = " << sdf->activeVoxelCount() << std::endl;
-		// in this test the calculations are in voxel units for simplicity
-		// and independency of conversion failures
-		//std::vector<float> proximity_ranges = {-1.5,-0.03,0,1,2,3,4,5,6};
-
-		// this sequence of shells is known to produce uneven shell contents
-		// the half steps has lot lower content
-		// e.g. 0.5 to 1 = 20886 and 1 to 1.5 = 708
-		std::vector<float> proximity_ranges = {-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5};
-		std::vector<float> number_of_voxels(proximity_ranges.size()-1);
-
-		// initialize dynamic vectors without knowing the initial size
-		std::vector<float> all_distances;
-		std::vector<float> different_distances;
-
-		for(int i=0;i<proximity_ranges.size();i++)
-		{
-			int voxel_counter = 0;
-			for (openvdb::FloatGrid::ValueOnIter iter = sdf->beginValueOn(); iter; ++iter)
-			{   
-				if (i<proximity_ranges.size())
-				{
-					if ((iter.getValue() < proximity_ranges[i+1]) && (iter.getValue() >= proximity_ranges[i]))
-					{
-						voxel_counter += 1;
-					}
-				}		
-				number_of_voxels[i] =  voxel_counter;	
-			}
-		}
-
-		for (openvdb::FloatGrid::ValueOnIter iter = sdf->beginValueOn(); iter; ++iter)
-		{   
-			all_distances.push_back(iter.getValue());
-			if(std::find(different_distances.begin(), different_distances.end(), iter.getValue()) != different_distances.end()) 
-			{
-			    // v contains x 
-			} else {
-			    // v does not contain x 
-				different_distances.push_back(iter.getValue());
-			}
-
-
-		}
-
-/*
-		for(int i=0;i<number_of_voxels.size();i++)
-		{
-			if (i<proximity_ranges.size())
-			{
-				std::cout << " number_of_voxels in distance " <<  proximity_ranges[i] << " to " << proximity_ranges[i+1] << " = " << number_of_voxels[i] << std::endl;
-			}	
-		}
-/*
-		for(int i=0;i<different_distances.size();++i)
-		{
-				//std::cout << "unique distance = " <<  different_sizes[i] << std::endl;
-				std::cout << different_distances[i] << ", " << std::endl;
-		}
-
-/*
-		FILE* f = fopen("all_sizes.txt","wt");
-
-		for(int i=0;i<all_distances.size();i++) fprintf(f, "%lf \n", all_distances[i]);
-
-		fclose(f);
-*/
-
 	}
 
 	void testOpenVDB_StdMap()
@@ -1554,150 +1125,6 @@ protected:
 		// seems to work as expected
 	}
 
-	void testOpenVDB_SdfReferenceChange()
-	{
-		// why are concentrations messed up and the distances reversed when choosing small voxel sizes
-		// checking whether the sdf is the problem
-
-		openvdb::initialize();
-		float initial_voxelsize = 2.0;		
-
-		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
-		grid = createBlock(15,1);
-
-		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
-
-		std::vector<openvdb::Vec3s> points;
-		std::vector<openvdb::Vec3I> triangles;
-		std::vector<openvdb::Vec4I> quads;
-
-		float isovalue=0.5;
-		float adaptivity=0;
-		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
-
-		float in_bandwidth = 2;
-		float ex_bandwidth = 5;
-
-		std::vector<float> voxel_sizes = {0.05,0.1,1,2,3,4,5};
-
-		std::vector<float> bounding_boxes;
-
-		for (int i=0;i<voxel_sizes.size();i++)
-		{			
-			openvdb::FloatGrid::Ptr sdf = openvdb::FloatGrid::create(0.0); 
-
-			// signed distance field
-			sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
-			sdf->setTransform(openvdb::math::Transform::createLinearTransform(voxel_sizes[i]));		
-
-			float minVal = 0.0;
-			float maxVal = 0.0;
-			sdf->evalMinMax(minVal,maxVal);
-			std::cout << " eval min max sdf" << " = " << minVal << " , " << maxVal << std::endl;
-			std::cout << " active voxel count sdf" << " = " << sdf->activeVoxelCount() << std::endl;
-
-			openvdb::math::CoordBBox bounding_box = sdf->evalActiveVoxelBoundingBox();
-			std::cout << " sdf " << " = " << bounding_box << std::endl;
-			
-			bounding_boxes.push_back(bounding_box);
-		}
-
-		for (int i=0;i<bounding_boxes.size();i++)
-		{
-			if (i>0)
-			{
-				CPPUNIT_ASSERT_DOUBLES_EQUAL(bounding_boxes[i-1],bounding_boxes[i],0.01);	
-			}
-		}
-
-		// all sdfs originate from the same initial voxelsize isosurface
-		// all sdfs do have the same amount of voxels and the same bounding boxes
-
-	}
-
-	void testOpenVDB_ReferenceCycle()
-	{
-
-		openvdb::initialize();
-		float initial_voxelsize = 2.0;		
-
-		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0.0);
-		grid = createBlock(15,1);
-
-		grid->setTransform(openvdb::math::Transform::createLinearTransform(initial_voxelsize));
-
-		std::vector<openvdb::Vec3s> points;
-		std::vector<openvdb::Vec3I> triangles;
-		std::vector<openvdb::Vec4I> quads;
-
-		float isovalue=0.5;
-		float adaptivity=0;
-		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
-
-		std::vector<float> voxel_sizes = {0.05,0.1,1,2,3,4,5};
-
-		std::vector<float> bounding_boxes;
-
-		float active_voxel_state_value = 1.0;
-		float ion_value = 5;
-
-		for (int i=0;i<voxel_sizes.size();i++)
-		{			
-
-			float max_distance = 2; // nm
-			float min_distance = -2; // nm
-
-			// mesh to signed distance takes floats as input
-			float in_bandwidth = abs(min_distance) / voxel_sizes[i];
-			float ex_bandwidth = max_distance / voxel_sizes[i];
-
-			std::cout << " in_bandwidth " << " = " << in_bandwidth << std::endl;
-			std::cout << " ex_bandwidth " << " = " << ex_bandwidth << std::endl;
-			openvdb::FloatGrid::Ptr sdf = openvdb::FloatGrid::create(0.0); 
-
-			// signed distance field
-			sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(openvdb::math::Transform(), points, triangles, quads, ex_bandwidth, in_bandwidth);
-			sdf->setTransform(openvdb::math::Transform::createLinearTransform(voxel_sizes[i]));	
-
-			openvdb::FloatGrid::Ptr ion_grid = sdf->deepCopy();
-			openvdb::FloatGrid::Ptr voxelstate_grid = sdf->deepCopy();
-
-			ion_grid->setTransform(openvdb::math::Transform::createLinearTransform(voxel_sizes[i]));
-			voxelstate_grid->setTransform(openvdb::math::Transform::createLinearTransform(voxel_sizes[i]));
-
-
-			for (openvdb::FloatGrid::ValueOnIter iter = ion_grid->beginValueOn(); iter; ++iter)
-			{   
-					iter.setValue(0.0);
-			}
-
-			for (openvdb::FloatGrid::ValueOnIter iter = voxelstate_grid->beginValueOn(); iter; ++iter)
-			{   
-					iter.setValue(active_voxel_state_value);
-			}
-
-
-			float minVal = 0.0;
-			float maxVal = 0.0;
-			sdf->evalMinMax(minVal,maxVal);
-			openvdb::math::CoordBBox bounding_box = sdf->evalActiveVoxelBoundingBox();
-			std::cout << " sdf " << " = " << bounding_box << std::endl;
-
-			for (openvdb::FloatGrid::ValueOnIter iter = sdf->beginValueOn(); iter; ++iter)
-			{   
-					iter.setValue(iter.getValue() * voxel_sizes[i]);
-			}
-
-			minVal = 0.0;
-			maxVal = 0.0;
-			sdf->evalMinMax(minVal,maxVal);
-			bounding_box = sdf->evalActiveVoxelBoundingBox();
-			std::cout << " sdf " << " = " << bounding_box << std::endl;
-
-		}
-
-	}
-
 	void testOpenVDB_RearrangeProximities()
 	{
 		
@@ -1735,9 +1162,103 @@ protected:
 	}
 
 
+	void testOpenVDB_VoxelIntersections()
+	{
+
+		// extract mesh
+		openvdb::initialize();
+		openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(0);
+		grid = createBlock(2,1);	
+		std::vector<openvdb::Vec3s> points;
+		std::vector<openvdb::Vec3I> triangles;
+		std::vector<openvdb::Vec4I> quads;
+
+		float isovalue=0.5;
+		float adaptivity=0;
+		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
+
+		float in_bandwidth = 2;
+		float ex_bandwidth = 2;
+
+		float voxelsize_levelset = 0.5;
+
+		// signed distance field
+		openvdb::math::Transform::Ptr trans = openvdb::math::Transform::createLinearTransform(voxelsize_levelset);
+		openvdb::FloatGrid::Ptr sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(*trans, points, triangles, quads, ex_bandwidth, in_bandwidth);
 
 
+	}
 
+	void testOpenVDB_SetProximityRanges()
+	{
+		// the narrowband has to be set to the lowest proximity range end + its other half shell
+		// with a given shell with of 1 and a max distance of 2 i want to end up with
+		// the proximity ends of -1.5,-0.5,0.5,1,5 -1.5, 2.5 
+		// so the narrowband has to include the distance -2.5 to 2.5
+		// the centers lie at -2,-1,0,1,2
+
+		std::vector<float> proximity_ranges_ends;
+		std::vector<float> proximity_ranges_centers;
+
+		int rescue_counter = 10000;
+		float max_distance = 2;
+		float shell_width = 1;
+		float current_end = shell_width/2;
+		// 1st entries
+		proximity_ranges_ends.push_back(current_end);
+		proximity_ranges_ends.push_back(-current_end);
+
+		int counter = 0;
+		while (current_end < max_distance)
+		{	
+			proximity_ranges_ends.push_back(current_end + shell_width);
+			proximity_ranges_ends.push_back(-(current_end + shell_width));
+			current_end += shell_width;
+			counter += 1;
+			if (counter > rescue_counter)
+			{
+				break;			
+			}
+		}
+
+		// now sort the ends
+		std::sort(proximity_ranges_ends.begin(), proximity_ranges_ends.end());
+		// pop the lowest as these are the ends
+		proximity_ranges_ends.erase(proximity_ranges_ends.begin());
+
+
+		counter = 0;
+		float current_center = 0;
+		// 1st entry
+		proximity_ranges_centers.push_back(current_center);
+		while (current_center < max_distance)
+		{	
+			proximity_ranges_centers.push_back(current_center + shell_width);
+			proximity_ranges_centers.push_back(-(current_center + shell_width));
+			current_center += shell_width;
+			counter += 1;
+			if (counter > rescue_counter)
+			{
+				break;			
+			}
+		}
+
+		// now sort the centers
+		std::sort(proximity_ranges_centers.begin(), proximity_ranges_centers.end());
+	
+		std::vector<float> assert_ranges_ends = {-1.5,-0.5,0.5,1.5,2.5};
+		std::vector<float> assert_ranges_centers = {-2,-1,0,1,2};
+
+		for (int i=0;i<assert_ranges_ends.size();i++)
+		{
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_ranges_ends[i], proximity_ranges_ends[i], 0.01);
+		}
+
+		for (int i=0;i<assert_ranges_centers.size();i++)
+		{
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_ranges_centers[i], proximity_ranges_centers[i], 0.01);
+		}
+	}
 
 
 
