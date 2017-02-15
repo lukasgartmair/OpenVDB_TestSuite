@@ -1227,8 +1227,6 @@ protected:
 
 		// now sort the ends
 		std::sort(proximity_ranges_ends.begin(), proximity_ranges_ends.end());
-		// pop the lowest as these are the ends
-		proximity_ranges_ends.erase(proximity_ranges_ends.begin());
 
 
 		counter = 0;
@@ -1250,7 +1248,7 @@ protected:
 		// now sort the centers
 		std::sort(proximity_ranges_centers.begin(), proximity_ranges_centers.end());
 	
-		std::vector<float> assert_ranges_ends = {-1.5,-0.5,0.5,1.5,2.5};
+		std::vector<float> assert_ranges_ends = {-2.5,-1.5,-0.5,0.5,1.5,2.5};
 		std::vector<float> assert_ranges_centers = {-2,-1,0,1,2};
 
 		for (int i=0;i<assert_ranges_ends.size();i++)
@@ -1263,8 +1261,6 @@ protected:
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_ranges_centers[i], proximity_ranges_centers[i], 0.01);
 		}
 	}
-
-
 
 	void testOpenVDB_ShellCheck()
 	{ 
@@ -1284,6 +1280,13 @@ protected:
 		int proximity_range_index = 0;
 		for (int i=0;i<unique_distances.size();i++)
 		{
+			
+			if ((unique_distances[i] >= proximity_ranges_limits[proximity_ranges_limits.size()-1]))
+			{
+				break;
+			}
+			
+			
 			if ((unique_distances[i] >= proximity_ranges_limits[proximity_range_index]))
 			{
 
