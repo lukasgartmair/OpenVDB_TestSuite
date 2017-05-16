@@ -1,3 +1,6 @@
+#ifndef VDB_TESTSUITE_H
+#define VDB_TESTSUITE_H
+
 
 #include <iostream>
 #include <cppunit/TestFixture.h>
@@ -10,6 +13,8 @@
 #include "vdb_functions.h"
 
 #include <algorithm>    // std::min
+
+using namespace VDB;
  
 class TestOpenVDB : public CppUnit::TestFixture {
 
@@ -19,98 +24,92 @@ public:
 	static CppUnit::Test *suite() {
 		CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite("TestOpenVDB");
  
-/*
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test0 - Test the Test itsself",
+
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - Test the Test itsself",
 				&TestOpenVDB::testOpenVDB_TestTheTest ));
-				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test1 - Division of Data1 small by big",
+		
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - Division of Data1 small by big",
 				&TestOpenVDB::testOpenVDB_DivisionOfData1 ));
 				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test2 - Division of Data2 big by small",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - Division of Data2 big by small",
 				&TestOpenVDB::testOpenVDB_DivisionOfData2 ));
 				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test3 - Division of Data3 misc",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - Division of Data3 misc",
 				&TestOpenVDB::testOpenVDB_DivisionOfData3 ));
 		
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test4 - Division of Data4 misc",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - Division of Data4 misc",
 				&TestOpenVDB::testOpenVDB_DivisionOfData4 ));
 				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test5 - Volume to mesh DMC",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - Volume to mesh DMC",
 				&TestOpenVDB::testOpenVDB_VolumeToMeshDMC ));
 				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test6 - round up ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - round up ",
 				&TestOpenVDB::testOpenVDB_RoundUp ));
 				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test7 - get voxel index ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - get voxel index ",
 				&TestOpenVDB::testOpenVDB_GetVoxelIndex ));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test8 - conversion openvdb vec3s to std::vec ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - conversion openvdb vec3s to std::vec ",
 				&TestOpenVDB::testOpenVDB_VectorConversion ));
 				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test9 - split openvdb quads to triangles ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - split openvdb quads to triangles ",
 				&TestOpenVDB::testOpenVDB_SplitQuadsToTriangles ));
 				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test10 - concatenate triangle lists ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - concatenate triangle lists ",
 				&TestOpenVDB::testOpenVDB_ConcatenateTriangles ));
 				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test11 - increase triangle vertex indices by n ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - increase triangle vertex indices by n ",
 				&TestOpenVDB::testOpenVDB_IncreaseTrianglesVertexIndices ));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test12 - decrease triangle vertex indices by n ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - decrease triangle vertex indices by n ",
 				&TestOpenVDB::testOpenVDB_DecreaseTrianglesVertexIndices ));
 				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test13 - compute vertex normals ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - compute vertex normals ",
 				&TestOpenVDB::testOpenVDB_ComputeVertexNormals ));
 				
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test14 - compute triangle normals ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - compute triangle normals ",
 				&TestOpenVDB::testOpenVDB_ComputeTriangleNormals ));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test15 - bounding box ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - bounding box ",
 				&TestOpenVDB::testOpenVDB_BoundingBox));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test16 - triangle areas ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - triangle areas ",
 				&TestOpenVDB::testOpenVDB_TriangleAreas));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test17 - export triangles to obj ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - export triangles to obj ",
 				&TestOpenVDB::testOpenVDB_ExportTriangles));
-
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test18 - active / inactive voxels ",
+	
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - active / inactive voxels ",
 				&TestOpenVDB::testOpenVDB_ActiveInactiveVoxels));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test19 - get voxel coords ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - get voxel coords ",
 				&TestOpenVDB::testOpenVDB_GetVoxelCoords));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test20 - find coord in vector ",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - find coord in vector ",
 				&TestOpenVDB::testOpenVDB_FindCoordInVector));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test21 - signed distance field",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - signed distance field",
 				&TestOpenVDB::testOpenVDB_SignedDistanceField));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test22 - std::map creation",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - std::map creation",
 				&TestOpenVDB::testOpenVDB_StdMap));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test23 - sort",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - sort",
 				&TestOpenVDB::testOpenVDB_Sort));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test24 - shell assignement",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - shell assignement",
 				&TestOpenVDB::testOpenVDB_ShellAnalysis));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test25 - sdf reference change ",
-				&TestOpenVDB::testOpenVDB_SdfReferenceChange));
-
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test26 - whole ReferenceCycle of the prxoigram filter ",
-				&TestOpenVDB::testOpenVDB_ReferenceCycle));
-*/
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test32 - rearrange the proximitiy ranges",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - rearrange the proximitiy ranges",
 				&TestOpenVDB::testOpenVDB_RearrangeProximities));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test33 - voxel intersections",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - voxel intersections",
 				&TestOpenVDB::testOpenVDB_VoxelIntersections));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test34 - set proximity ranges",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - set proximity ranges",
 				&TestOpenVDB::testOpenVDB_SetProximityRanges));
 
-		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test35 - new shell check",
+		suiteOfTests->addTest(new CppUnit::TestCaller<TestOpenVDB>("Test - new shell check",
 				&TestOpenVDB::testOpenVDB_ShellCheck));
 
 
@@ -124,6 +123,9 @@ public:
 	void tearDown() {}
  
 protected:
+
+	const unsigned int xyzs = 3;
+
 	void testOpenVDB_TestTheTest() {
 		int x = 1;
 		int z = 2;
@@ -169,7 +171,7 @@ protected:
 		// that means there should be division by zero
 		// another thing occured here i did not see before:
 		// instead of -nf from 0/0 division inf occurs from the division 
-		// so i have to check both cases http://stackoverflow.com/questions/4095337/how-to-check-for-inf-and-or-nf-in-a-double-variable
+		// so i have to check both cases http://stackoverflow.com/questions/4095337/how-to-check-for-inf-and-or-nf-in-a-float-variable
 		// with std::isfinite(x) --> if inf or -nf is finite results in false
 		openvdb::initialize();
 		openvdb::FloatGrid::Ptr small_grid = openvdb::FloatGrid::create(/*background value=*/0);
@@ -315,10 +317,9 @@ protected:
 		// this test should check how this is possible
 		// i.e. not only to check the amount but the content!
 		int non_finites_counter = 0;
-		int xyzs = 3;
-		for (int i=0;i<vertices.size();i++)
+		for (unsigned int i=0;i<vertices.size();i++)
 		{
-			for (int j=0;j<xyzs;j++)
+			for (unsigned int j=0;j<xyzs;j++)
 			{
 			    if (std::isfinite(vertices[i][j]) == false)
 				{	
@@ -336,9 +337,9 @@ protected:
 		
 		vertices[0][0] = 0.0 / 0.0; // which results in -nan
  		
-		for (int i=0;i<vertices.size();i++)
+		for (unsigned int i=0;i<vertices.size();i++)
 		{
-			for (int j=0;j<xyzs;j++)
+			for (unsigned int j=0;j<xyzs;j++)
 			{
 			    if (std::isfinite(vertices[i][j]) == false)
 				{	
@@ -408,7 +409,7 @@ protected:
 		coord test_coord = {0,0,0};
 		coord result_coord = {0,0,0};
 		float voxelsize = 3;
-		result_coord = GetVoxelIndex(&test_coord, voxelsize);
+		result_coord = getVoxelIndex(&test_coord, voxelsize);
 		coord assert_coord = {0,0,0};
 		CPPUNIT_ASSERT_EQUAL(result_coord.x, assert_coord.x);
 		CPPUNIT_ASSERT_EQUAL(result_coord.y, assert_coord.y);
@@ -417,7 +418,7 @@ protected:
 		test_coord = {12.5,-22,-3};
 		result_coord = {0,0,0};
 		voxelsize = 3;
-		result_coord = GetVoxelIndex(&test_coord, voxelsize);
+		result_coord = getVoxelIndex(&test_coord, voxelsize);
 		assert_coord = {4,-7,-1};
 		//std::cout << "x" << " = " << result_coord.x << std::endl; 
 		//std::cout << "y" << " = " << result_coord.y << std::endl; 
@@ -429,7 +430,7 @@ protected:
 		test_coord = {12.5,0.1,-3};
 		result_coord = {0,0,0};
 		voxelsize = 3;
-		result_coord = GetVoxelIndex(&test_coord, voxelsize);
+		result_coord = getVoxelIndex(&test_coord, voxelsize);
 		assert_coord = {4,0,-1};
 		//std::cout << "x" << " = " << result_coord.x << std::endl; 
 		//std::cout << "y" << " = " << result_coord.y << std::endl; 
@@ -449,17 +450,16 @@ protected:
 		grid = createBlock(10,1);	
 		std::vector<openvdb::Vec3s> vertices;
 		vertices = volumeToMeshVertices(grid, 0.5, 0);
-		
-	  	int xyzs = 3;
+
 		std::vector<std::vector<float> > standard_points(vertices.size(), std::vector<float>(xyzs));
 
 		standard_points = convertOpenVDBVectorToStandardVector(vertices);
 		
-		for (int i=0;i<vertices.size();i++)
+		for (unsigned int i=0;i<vertices.size();i++)
 		{
-			CPPUNIT_ASSERT_EQUAL(vertices[i].x(), standard_points[i][0]);
-			CPPUNIT_ASSERT_EQUAL(vertices[i].y(), standard_points[i][1]);
-			CPPUNIT_ASSERT_EQUAL(vertices[i].z(), standard_points[i][2]);
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(vertices[i].x(), standard_points[i][0],0.01);
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(vertices[i].y(), standard_points[i][1],0.01);
+			CPPUNIT_ASSERT_DOUBLES_EQUAL(vertices[i].z(), standard_points[i][2],0.01);
 		}
 	
 	}
@@ -479,7 +479,7 @@ protected:
 		float adaptivity=0;
 		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
 
-		std::vector<std::vector<float> > triangles_from_splitted_quads;
+		std::vector<std::vector<unsigned int> > triangles_from_splitted_quads;
 
 		//triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
 		
@@ -488,11 +488,11 @@ protected:
 		//CPPUNIT_ASSERT_EQUAL(quads.size()*2,triangles_from_splitted_quads.size());
 		
 		// faces outputs from openvdb volume to mesh starting from zero!
-		int minimum  = 20;
-		int minimum_tris = 20;
-		for (int i=0;i<triangles.size();i++)
+		unsigned int minimum  = 20;
+		unsigned int minimum_tris = 20;
+		for (unsigned int i=0;i<triangles.size();i++)
 		{
-			for (int j=0;j<3;j++)
+			for (unsigned int j=0;j<3;j++)
 			{
 				if (triangles[i][j] < minimum)
 				{
@@ -501,10 +501,10 @@ protected:
 			}
 		}
 		
-		int minimum_quads = 20;
-		for (int i=0;i<quads.size();i++)
+		unsigned int minimum_quads = 20;
+		for (unsigned int i=0;i<quads.size();i++)
 		{
-			for (int j=0;j<3;j++)
+			for (unsigned int j=0;j<3;j++)
 			{
 				if (quads[i][j] < minimum_quads)
 				{
@@ -522,7 +522,7 @@ protected:
 			minimum = minimum_quads;
 		}
 
-		const int assert_faces_minimum = 0;
+		unsigned int assert_faces_minimum = 0;
 		CPPUNIT_ASSERT_EQUAL(assert_faces_minimum, minimum);
 
 	
@@ -552,13 +552,12 @@ protected:
 		quads[0][3] = 3;
 		
 		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
-		int tri_size = triangles_from_splitted_quads.size();
-		CPPUNIT_ASSERT_EQUAL(2,tri_size);
+		unsigned int tri_size = triangles_from_splitted_quads.size();
+		unsigned int assert_size = 2;
+		CPPUNIT_ASSERT_EQUAL(assert_size,tri_size);
 		
 		//check the contents
-		
-		int xyzs = 3;
-		std::vector<std::vector<float> > assert_triangles(tri_size, std::vector<float>(xyzs));
+		std::vector<std::vector<unsigned int> > assert_triangles(tri_size, std::vector<unsigned int>(xyzs));
 		
 		assert_triangles[0][0] = 0; 
 		assert_triangles[0][1] = 1; 
@@ -567,7 +566,7 @@ protected:
 		assert_triangles[1][1] = 2; 
 		assert_triangles[1][2] = 3; 	
 		
-		for (int i=0;i<tri_size;i++)
+		for (unsigned int i=0;i<tri_size;i++)
 		{
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][0], triangles_from_splitted_quads[i][0],0.01);
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][1], triangles_from_splitted_quads[i][1],0.01);
@@ -589,10 +588,10 @@ protected:
 		float adaptivity=0.5;
 		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
 
-		std::vector<std::vector<float> > triangles_from_splitted_quads;
+		std::vector<std::vector<unsigned int> > triangles_from_splitted_quads;
 		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
 		
-		std::vector<std::vector<float> > triangles_combined;
+		std::vector<std::vector<unsigned int> > triangles_combined;
 		
 		triangles_combined = concatenateTriangleVectors(triangles, triangles_from_splitted_quads);
 		
@@ -601,20 +600,20 @@ protected:
 		//std::cout << triangles_combined[triangles.size()][2] << std::endl; 
 
 		// check the amount
-		int tri_size = triangles_combined.size();
-		int assert_size = (quads.size()*2) + triangles.size();
+		unsigned int tri_size = triangles_combined.size();
+		unsigned int assert_size = (quads.size()*2) + triangles.size();
 		CPPUNIT_ASSERT_EQUAL(assert_size, tri_size);
 
 		//check the contents
 		
-		for (int i=0;i<triangles.size();i++)
+		for (unsigned int i=0;i<triangles.size();i++)
 		{
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(triangles[i][0], triangles_combined[i][0],0.01);
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(triangles[i][1], triangles_combined[i][1],0.01);
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(triangles[i][2], triangles_combined[i][2],0.01);
 		}
 		
-		for (int i=triangles.size();i<2*quads.size()+triangles.size();i++)
+		for (unsigned int i=triangles.size();i<2*quads.size()+triangles.size();i++)
 		{
 			int shifted_index = i - triangles.size();
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(triangles_from_splitted_quads[shifted_index][0], triangles_combined[i][0],0.01);
@@ -625,9 +624,8 @@ protected:
 	}
 	void testOpenVDB_IncreaseTrianglesVertexIndices()
 	{
-		int tri_size = 2;
-		int xyzs = 3;
-		std::vector<std::vector<float> > triangles(tri_size, std::vector<float>(xyzs));
+		unsigned int tri_size = 2;
+		std::vector<std::vector<unsigned int> > triangles(tri_size, std::vector<unsigned int>(xyzs));
 	
 		triangles[0][0] = 0; 
 		triangles[0][1] = 1; 
@@ -636,7 +634,7 @@ protected:
 		triangles[1][1] = 2; 
 		triangles[1][2] = 3; 	
 
-		std::vector<std::vector<float> > assert_triangles(tri_size, std::vector<float>(xyzs));
+		std::vector<std::vector<unsigned int> > assert_triangles(tri_size, std::vector<unsigned int>(xyzs));
 		
 		assert_triangles[0][0] = 1; 
 		assert_triangles[0][1] = 2; 
@@ -645,12 +643,12 @@ protected:
 		assert_triangles[1][1] = 3; 
 		assert_triangles[1][2] = 4; 
 		
-		std::vector<std::vector<float> > result_triangles(tri_size, std::vector<float>(xyzs));
+		std::vector<std::vector<unsigned int> > result_triangles(tri_size, std::vector<unsigned int>(xyzs));
 		int N = 1;
-		result_triangles = IncreaseTriangleVertexIndicesByN(triangles, N);
+		result_triangles = increaseTriangleVertexIndicesByN(triangles, N);
 		
 		//check the contents
-		for (int i=0;i<tri_size;i++)
+		for (unsigned int i=0;i<tri_size;i++)
 		{
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][0], result_triangles[i][0],0.01);
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][1], result_triangles[i][1],0.01);
@@ -660,9 +658,8 @@ protected:
 	
 	void testOpenVDB_DecreaseTrianglesVertexIndices()
 	{
-		int tri_size = 2;
-		int xyzs = 3;
-		std::vector<std::vector<float> > triangles(tri_size, std::vector<float>(xyzs));
+		const unsigned int tri_size = 2;
+		std::vector<std::vector<unsigned int> > triangles(tri_size, std::vector<unsigned int>(xyzs));
 	
 		triangles[0][0] = 1; 
 		triangles[0][1] = 2; 
@@ -671,7 +668,7 @@ protected:
 		triangles[1][1] = 3; 
 		triangles[1][2] = 4; 	
 
-		std::vector<std::vector<float> > assert_triangles(tri_size, std::vector<float>(xyzs));
+		std::vector<std::vector<unsigned int> > assert_triangles(tri_size, std::vector<unsigned int>(xyzs));
 		
 		assert_triangles[0][0] = 0; 
 		assert_triangles[0][1] = 1; 
@@ -680,12 +677,12 @@ protected:
 		assert_triangles[1][1] = 2; 
 		assert_triangles[1][2] = 3; 
 		
-		std::vector<std::vector<float> > result_triangles(tri_size, std::vector<float>(xyzs));
+		std::vector<std::vector<unsigned int> > result_triangles(tri_size, std::vector<unsigned int>(xyzs));
 		int N = 1;
-		result_triangles = DecreaseTriangleVertexIndicesByN(triangles, N);
+		result_triangles = decreaseTriangleVertexIndicesByN(triangles, N);
 		
 		//check the contents
-		for (int i=0;i<tri_size;i++)
+		for (unsigned int i=0;i<tri_size;i++)
 		{
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][0], result_triangles[i][0],0.01);
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_triangles[i][1], result_triangles[i][1],0.01);
@@ -696,9 +693,8 @@ protected:
 	void testOpenVDB_ComputeVertexNormals()
 	{
 
-		int tri_size = 2;
-		int xyzs = 3;
-		std::vector<std::vector<float> > triangles(tri_size, std::vector<float>(xyzs));
+		const unsigned int tri_size = 2;
+		std::vector<std::vector<unsigned int> > triangles(tri_size, std::vector<unsigned int>(xyzs));
 		
 		triangles[0][0] = 0; 
 		triangles[0][1] = 1; 
@@ -735,15 +731,15 @@ protected:
 
 		std::vector<std::vector<float> > triangle_normals;
 		
-		triangle_normals = ComputeTriangleNormalsVDB(points, triangles);
+		triangle_normals = computeTriangleNormalsVDB(points, triangles);
 	
 		std::vector<std::vector<float> > vertex_normals;
 	
-		vertex_normals = ComputeVertexNormals(triangles, points, triangle_normals);
+		vertex_normals = computeVertexNormals(triangles, points, triangle_normals);
 
 	
 		// check the amount
-		int size_normals = 4;
+		const unsigned int size_normals = 4;
 		CPPUNIT_ASSERT_DOUBLES_EQUAL(size_normals, vertex_normals.size(),0.01);
 		// check the content
 		/*
@@ -766,8 +762,7 @@ protected:
 	void testOpenVDB_ComputeTriangleNormals()
 	{
 	
-		int tri_size = 2;
-		int xyzs = 3;
+		const unsigned int tri_size = 2;
 		std::vector<std::vector<float> > normals;
 		
 		// vdb version
@@ -786,7 +781,7 @@ protected:
 		// both zs == 0 i.e. the triangle is parallel to xy plane
 		// normal should be 001
 		
-		std::vector<std::vector<float> > triangle(1, std::vector<float>(xyzs));
+		std::vector<std::vector<unsigned int> > triangle(1, std::vector<unsigned int>(xyzs));
 		triangle[0][0] = 1; 
 		triangle[0][1] = 2; 
 		triangle[0][2] = 0; 
@@ -801,7 +796,7 @@ protected:
 		points[2][1] = 1.0;
 		points[2][2] = 0.0;
 		
-		normals = ComputeTriangleNormalsVDB(points, triangle);
+		normals = computeTriangleNormalsVDB(points, triangle);
 
 		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][0],0.01);
 		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][1],0.01);
@@ -821,7 +816,7 @@ protected:
 		std_points[2][1] = 1.0;
 		std_points[2][2] = 0.0;
 		
-		normals = ComputeTriangleNormals(std_points, triangle);
+		normals = computeTriangleNormals(std_points, triangle);
 
 		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][0],0.01);
 		CPPUNIT_ASSERT_DOUBLES_EQUAL(0, normals[0][1],0.01);
@@ -862,16 +857,16 @@ protected:
 		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
 
 
-		std::vector<std::vector<float> > triangles_from_splitted_quads;
+		std::vector<std::vector<unsigned int> > triangles_from_splitted_quads;
 		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
 		
-		std::vector<std::vector<float> > triangles_combined;
+		std::vector<std::vector<unsigned int> > triangles_combined;
 		
 		triangles_combined = concatenateTriangleVectors(triangles, triangles_from_splitted_quads);
 
 
 		std::vector<float> triangle_areas(triangles_combined.size());
-		triangle_areas = ComputeTriangleAreas(points, triangles_combined);
+		triangle_areas = computeTriangleAreas(points, triangles_combined);
 		/*
 		std::cout << triangle_areas[0] << std::endl; 
 		std::cout << triangle_areas[0] << std::endl; 
@@ -892,15 +887,15 @@ protected:
 		float adaptivity=0;
 		openvdb::tools::volumeToMesh<openvdb::FloatGrid>(*grid, points, triangles, quads, isovalue, adaptivity);
 
-		std::vector<std::vector<float> > triangles_from_splitted_quads;
+		std::vector<std::vector<unsigned int> > triangles_from_splitted_quads;
 		triangles_from_splitted_quads = splitQuadsToTriangles(points, quads);
 		
-		std::vector<std::vector<float> > triangles_combined;
+		std::vector<std::vector<unsigned int> > triangles_combined;
 		
 		triangles_combined = concatenateTriangleVectors(triangles, triangles_from_splitted_quads);
 
 		
-		ExportTriangleMeshAsObj(points, triangles_combined);
+		exportTriangleMeshAsObj(points, triangles_combined);
 
 	}
 
@@ -959,12 +954,10 @@ protected:
 		grid = createBlock(2,1);
 		openvdb::FloatGrid::Accessor accessor = grid->getAccessor();
 
-		const int xyzs = 3;
-
 		std::vector<std::vector<float> > active_voxel_indices(grid->activeVoxelCount(), std::vector<float>(xyzs));
 		openvdb::Coord hkl;
 
-		int voxel_counter = 0;
+		unsigned int voxel_counter = 0;
 		for (openvdb::FloatGrid::ValueOnIter iter = grid->beginValueOn(); iter; ++iter)
 		{   
 	    			iter.setValue(0.0);
@@ -988,12 +981,10 @@ protected:
 		grid = createBlock(2,1);
 		openvdb::FloatGrid::Accessor accessor = grid->getAccessor();
 
-		const int xyzs = 3;
-
 		std::vector<std::vector<float> > active_voxel_indices(grid->activeVoxelCount(), std::vector<float>(xyzs));
 		openvdb::Coord hkl;
 
-		int voxel_counter = 0;
+		unsigned int voxel_counter = 0;
 		for (openvdb::FloatGrid::ValueOnIter iter = grid->beginValueOn(); iter; ++iter)
 		{   
 	    			iter.setValue(0.0);
@@ -1051,8 +1042,8 @@ protected:
 		openvdb::math::Transform::Ptr trans = openvdb::math::Transform::createLinearTransform(voxelsize_levelset);
 		openvdb::FloatGrid::Ptr sdf = openvdb::tools::meshToSignedDistanceField<openvdb::FloatGrid>(*trans, points, triangles, quads, ex_bandwidth, in_bandwidth);
 
-		int active_voxels_meshgrid = grid->activeVoxelCount();
-		int active_voxels_sdf = sdf->activeVoxelCount();
+		unsigned int active_voxels_meshgrid = grid->activeVoxelCount();
+		unsigned int active_voxels_sdf = sdf->activeVoxelCount();
 
 		//std::cout << " active_voxels_meshgrid" << " = " << active_voxels_meshgrid << std::endl;
 		//std::cout << " active_voxels_sdf" << " = " << active_voxels_sdf << std::endl;
@@ -1086,7 +1077,7 @@ protected:
 
 	void testOpenVDB_Sort()
 	{
-		std::vector<int> vec = {3,1,2};
+		std::vector<unsigned int> vec = {3,1,2};
 
 		std::sort(vec.begin(), vec.end());
 
@@ -1101,14 +1092,14 @@ protected:
 
 		// does the summarization of the shells work as expected?
 
-		int number_of_proximity_ranges = 3;
+		const unsigned int number_of_proximity_ranges = 3;
 
 		std::vector<float> proximity_ranges_ends = {-0.5, 2, 5};
 
 		std::vector<float> shell_content(number_of_proximity_ranges);
 
-		int proximity_range_index = 0;
-		for (int i=0;i<unique_distances.size();i++)
+		unsigned int proximity_range_index = 0;
+		for (unsigned int i=0;i<unique_distances.size();i++)
 		{
 			if (proximity_range_index < number_of_proximity_ranges)
 			{
@@ -1132,14 +1123,14 @@ protected:
 	void testOpenVDB_RearrangeProximities()
 	{
 		
-		int number_of_proximity_ranges = 5;
+		const unsigned int number_of_proximity_ranges = 5;
 		float shell_width = 0.5;
 
 		std::vector<float> proximity_ranges_ends = {-1,-0.5,0,0.5,1};
 
 		std::vector<float> proximity_ranges_plotting(number_of_proximity_ranges);
 
-		for (int i=0;i<proximity_ranges_plotting.size();i++)
+		for (unsigned int i=0;i<proximity_ranges_plotting.size();i++)
 		{
 			if (proximity_ranges_ends[i] <= 0)
 			{
@@ -1151,14 +1142,14 @@ protected:
 			}			
 		}		
 
-		for (int i=0;i<proximity_ranges_plotting.size();i++)
+		for (unsigned int i=0;i<proximity_ranges_plotting.size();i++)
 		{		
 			std::cout << " proximity_ranges_plotting [i] " << " = " << proximity_ranges_plotting[i] << std::endl;	
 		}
 
 		std::vector<float> assert_ranges_ends = {-1.5,-1,-0.5,0.5,1};
 
-		for (int i=0;i<proximity_ranges_plotting.size();i++)
+		for (unsigned int i=0;i<proximity_ranges_plotting.size();i++)
 		{		
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_ranges_ends[i], proximity_ranges_plotting[i], 0.01);	
 		}
@@ -1204,7 +1195,7 @@ protected:
 		std::vector<float> proximity_ranges_ends;
 		std::vector<float> proximity_ranges_centers;
 
-		int rescue_counter = 10000;
+		const unsigned int rescue_counter = 10000;
 		float max_distance = 2;
 		float shell_width = 1;
 		float current_end = shell_width/2;
@@ -1212,7 +1203,7 @@ protected:
 		proximity_ranges_ends.push_back(current_end);
 		proximity_ranges_ends.push_back(-current_end);
 
-		int counter = 0;
+		unsigned int counter = 0;
 		while (current_end < max_distance)
 		{	
 			proximity_ranges_ends.push_back(current_end + shell_width);
@@ -1251,12 +1242,12 @@ protected:
 		std::vector<float> assert_ranges_ends = {-2.5,-1.5,-0.5,0.5,1.5,2.5};
 		std::vector<float> assert_ranges_centers = {-2,-1,0,1,2};
 
-		for (int i=0;i<assert_ranges_ends.size();i++)
+		for (unsigned int i=0;i<assert_ranges_ends.size();i++)
 		{
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_ranges_ends[i], proximity_ranges_ends[i], 0.01);
 		}
 
-		for (int i=0;i<assert_ranges_centers.size();i++)
+		for (unsigned int i=0;i<assert_ranges_centers.size();i++)
 		{
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(assert_ranges_centers[i], proximity_ranges_centers[i], 0.01);
 		}
@@ -1265,20 +1256,19 @@ protected:
 	void testOpenVDB_ShellCheck()
 	{ 
 
-		
-		std::vector<float> proximity_ranges_limits = {-2.5,-1.5,-0.5,0.5,1.5,2.5};
-		std::vector<float> assert_ranges_centers = {-2,-1,0,1,2};
+		std::vector<float> proximity_ranges_limits {-2.5,-1.5,-0.5,0.5,1.5,2.5};
+		std::vector<float> assert_ranges_centers {-2,-1,0,1,2};
 		std::vector<float> shell_content(assert_ranges_centers.size());
 
-		std::vector<float> unique_distances = {-4,-2.3,-2.0,-1.4,-1.1,-0.3,0.2,1.1,1.4,2.1,2.3,3.0};
+		std::vector<float> unique_distances {-4,-2.3,-2.0,-1.4,-1.1,-0.3,0.2,1.1,1.4,2.1,2.3,3.0};
 		std::vector<float> voxel_content;
-		for (int i=0;i<unique_distances.size();i++)
+		for (unsigned int i=0;i<unique_distances.size();i++)
 		{
 			voxel_content.push_back(1);
 		}
 
-		int proximity_range_index = 0;
-		for (int i=0;i<unique_distances.size();i++)
+		unsigned int proximity_range_index = 0;
+		for (unsigned int i=0;i<unique_distances.size();i++)
 		{
 			
 			if ((unique_distances[i] >= proximity_ranges_limits[proximity_ranges_limits.size()-1]))
@@ -1298,7 +1288,7 @@ protected:
 
 			}	
 		}
-		for (int i=0;i<shell_content.size();i++)
+		for (unsigned int i=0;i<shell_content.size();i++)
 		{
 			std::cout << " shell_content [i] " << " = " << shell_content[i] << std::endl;
 			CPPUNIT_ASSERT_DOUBLES_EQUAL(2,shell_content[i],0.01);
@@ -1308,3 +1298,5 @@ protected:
 	}
 
 };
+
+#endif

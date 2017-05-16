@@ -23,7 +23,6 @@ backend/filters/OpenVDB_TestSuite/3Depict-vdb_functions.o: \
  /usr/include/x86_64-linux-gnu/bits/types.h \
  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
  /usr/include/x86_64-linux-gnu/bits/confname.h /usr/include/getopt.h \
- /usr/include/x86_64-linux-gnu/bits/unistd.h \
  /usr/include/boost/config/select_platform_config.hpp \
  /usr/include/boost/config/platform/linux.hpp /usr/include/c++/5/cstdlib \
  /usr/include/stdlib.h /usr/include/x86_64-linux-gnu/bits/waitflags.h \
@@ -36,12 +35,9 @@ backend/filters/OpenVDB_TestSuite/3Depict-vdb_functions.o: \
  /usr/include/x86_64-linux-gnu/bits/select.h \
  /usr/include/x86_64-linux-gnu/bits/sigset.h \
  /usr/include/x86_64-linux-gnu/bits/time.h \
- /usr/include/x86_64-linux-gnu/bits/select2.h \
  /usr/include/x86_64-linux-gnu/sys/sysmacros.h \
  /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h /usr/include/alloca.h \
- /usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
- /usr/include/x86_64-linux-gnu/bits/stdlib.h \
  /usr/include/boost/config/posix_features.hpp \
  /usr/include/boost/config/suffix.hpp \
  /usr/lib/gcc/x86_64-linux-gnu/5/include/stdint.h /usr/include/stdint.h \
@@ -53,7 +49,7 @@ backend/filters/OpenVDB_TestSuite/3Depict-vdb_functions.o: \
  /usr/include/c++/5/bits/memoryfwd.h /usr/include/c++/5/bits/postypes.h \
  /usr/include/c++/5/cwchar /usr/include/wchar.h /usr/include/stdio.h \
  /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
- /usr/include/x86_64-linux-gnu/bits/wchar2.h /usr/include/c++/5/exception \
+ /usr/include/c++/5/exception \
  /usr/include/c++/5/bits/atomic_lockfree_defines.h \
  /usr/include/c++/5/bits/char_traits.h \
  /usr/include/c++/5/bits/stl_algobase.h \
@@ -120,9 +116,7 @@ backend/filters/OpenVDB_TestSuite/3Depict-vdb_functions.o: \
  /usr/include/x86_64-linux-gnu/bits/inf.h \
  /usr/include/x86_64-linux-gnu/bits/nan.h \
  /usr/include/x86_64-linux-gnu/bits/mathdef.h \
- /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
- /usr/include/x86_64-linux-gnu/bits/mathinline.h \
- /usr/include/c++/5/limits \
+ /usr/include/x86_64-linux-gnu/bits/mathcalls.h /usr/include/c++/5/limits \
  /usr/include/boost/numeric/conversion/conversion_traits.hpp \
  /usr/include/boost/numeric/conversion/detail/conversion_traits.hpp \
  /usr/include/boost/type_traits/is_arithmetic.hpp \
@@ -724,7 +718,6 @@ backend/filters/OpenVDB_TestSuite/3Depict-vdb_functions.o: \
  /usr/include/boost/math/tools/real_cast.hpp \
  /usr/include/boost/math/special_functions/detail/fp_traits.hpp \
  /usr/include/c++/5/cstring /usr/include/string.h \
- /usr/include/x86_64-linux-gnu/bits/string3.h \
  /usr/include/boost/detail/endian.hpp \
  /usr/include/boost/predef/detail/endian_compat.h \
  /usr/include/boost/mpl/divides.hpp \
@@ -995,8 +988,6 @@ backend/filters/OpenVDB_TestSuite/3Depict-vdb_functions.o: \
  /usr/include/openvdb/tools/MeshToVolume.h /usr/include/libio.h \
  /usr/include/_G_config.h \
  /usr/include/x86_64-linux-gnu/bits/sys_errlist.h \
- /usr/include/x86_64-linux-gnu/bits/stdio.h \
- /usr/include/x86_64-linux-gnu/bits/stdio2.h \
  /usr/include/openvdb/tools/Composite.h /usr/include/c++/5/numeric \
  /usr/include/c++/5/bits/stl_numeric.h
 
@@ -1058,8 +1049,6 @@ backend/filters/OpenVDB_TestSuite/vdb_functions.h:
 
 /usr/include/getopt.h:
 
-/usr/include/x86_64-linux-gnu/bits/unistd.h:
-
 /usr/include/boost/config/select_platform_config.hpp:
 
 /usr/include/boost/config/platform/linux.hpp:
@@ -1094,19 +1083,13 @@ backend/filters/OpenVDB_TestSuite/vdb_functions.h:
 
 /usr/include/x86_64-linux-gnu/bits/time.h:
 
-/usr/include/x86_64-linux-gnu/bits/select2.h:
-
 /usr/include/x86_64-linux-gnu/sys/sysmacros.h:
 
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h:
 
 /usr/include/alloca.h:
 
-/usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h:
-
 /usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
-
-/usr/include/x86_64-linux-gnu/bits/stdlib.h:
 
 /usr/include/boost/config/posix_features.hpp:
 
@@ -1147,8 +1130,6 @@ backend/filters/OpenVDB_TestSuite/vdb_functions.h:
 /usr/include/stdio.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h:
-
-/usr/include/x86_64-linux-gnu/bits/wchar2.h:
 
 /usr/include/c++/5/exception:
 
@@ -1321,8 +1302,6 @@ backend/filters/OpenVDB_TestSuite/vdb_functions.h:
 /usr/include/x86_64-linux-gnu/bits/mathdef.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls.h:
-
-/usr/include/x86_64-linux-gnu/bits/mathinline.h:
 
 /usr/include/c++/5/limits:
 
@@ -2638,8 +2617,6 @@ backend/filters/OpenVDB_TestSuite/vdb_functions.h:
 
 /usr/include/string.h:
 
-/usr/include/x86_64-linux-gnu/bits/string3.h:
-
 /usr/include/boost/detail/endian.hpp:
 
 /usr/include/boost/predef/detail/endian_compat.h:
@@ -3291,10 +3268,6 @@ backend/filters/OpenVDB_TestSuite/vdb_functions.h:
 /usr/include/_G_config.h:
 
 /usr/include/x86_64-linux-gnu/bits/sys_errlist.h:
-
-/usr/include/x86_64-linux-gnu/bits/stdio.h:
-
-/usr/include/x86_64-linux-gnu/bits/stdio2.h:
 
 /usr/include/openvdb/tools/Composite.h:
 
